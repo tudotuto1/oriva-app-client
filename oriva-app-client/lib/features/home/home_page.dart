@@ -17,12 +17,27 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _searchController = TextEditingController();
   List<Map<String, dynamic>> _products = [];
+  String _searchQuery = '';
   bool _loading = true;
 
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(_onSearchChanged);
     _loadProducts();
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    final q = _searchController.text;
+    if (q == _searchQuery) return;
+    setState(() => _searchQuery = q);
   }
 
   Future<void> _loadProducts() async {
@@ -41,6 +56,17 @@ class _HomePageState extends State<HomePage> {
       setState(() => _loading = false);
     }
   }
+
+  List<Map<String, dynamic>> get _filteredProducts {
+    final q = _searchQuery.trim().toLowerCase();
+    if (q.isEmpty) return _products;
+    return _products
+        .where((p) => (p['title'] ?? '').toString().toLowerCase().contains(q))
+        .toList();
+  }
+
+  List<Map<String, dynamic>> get _featuredProducts =>
+      _products.take(5).toList();
 
   String _formatPrice(num price) {
     final formatter = NumberFormat('#,###', 'fr_FR');
@@ -117,9 +143,15 @@ class _HomePageState extends State<HomePage> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: TextField(
                     controller: _searchController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Rechercher un produit…',
-                      prefixIcon: Icon(LucideIcons.search, size: 18),
+                      prefixIcon: const Icon(LucideIcons.search, size: 18),
+                      suffixIcon: _searchQuery.isEmpty
+                          ? null
+                          : IconButton(
+                              icon: const Icon(LucideIcons.x, size: 16),
+                              onPressed: () => _searchController.clear(),
+                            ),
                     ),
                   ),
                 ),
@@ -127,20 +159,49 @@ class _HomePageState extends State<HomePage> {
 
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
+              // Carrousel nouveautés
+              if (!_loading && _searchQuery.isEmpty && _featuredProducts.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+                    child: Text(
+                      'NOUVEAUTÉS',
+                      style: OrivaTypography.label(color: OrivaColors.gold),
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: _FeaturedCarousel(
+                    products: _featuredProducts,
+                    formatPrice: _formatPrice,
+                  ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              ],
+
               // Grille produits
               if (_loading)
                 const SliverFillRemaining(
                   child: Center(child: CircularProgressIndicator(color: OrivaColors.gold)),
                 )
-              else if (_products.isEmpty)
+              else if (_filteredProducts.isEmpty)
                 SliverFillRemaining(
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(LucideIcons.packageOpen, size: 48, color: OrivaColors.muted),
+                        Icon(
+                          _searchQuery.isEmpty ? LucideIcons.packageOpen : LucideIcons.searchX,
+                          size: 48,
+                          color: OrivaColors.muted,
+                        ),
                         const SizedBox(height: 16),
-                        Text('Aucun produit pour le moment', style: OrivaTypography.body(color: OrivaColors.muted)),
+                        Text(
+                          _searchQuery.isEmpty
+                              ? 'Aucun produit pour le moment'
+                              : 'Aucun résultat pour « $_searchQuery »',
+                          style: OrivaTypography.body(color: OrivaColors.muted),
+                        ),
                       ],
                     ),
                   ),
@@ -157,10 +218,10 @@ class _HomePageState extends State<HomePage> {
                     ),
                     delegate: SliverChildBuilderDelegate(
                       (context, i) => _ProductCard(
-                        product: _products[i],
+                        product: _filteredProducts[i],
                         formatPrice: _formatPrice,
                       ),
-                      childCount: _products.length,
+                      childCount: _filteredProducts.length,
                     ),
                   ),
                 ),
@@ -249,6 +310,133 @@ class _ProductCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _FeaturedCarousel extends StatefulWidget {
+  final List<Map<String, dynamic>> products;
+  final String Function(num) formatPrice;
+
+  const _FeaturedCarousel({required this.products, required this.formatPrice});
+
+  @override
+  State<_FeaturedCarousel> createState() => _FeaturedCarouselState();
+}
+
+class _FeaturedCarouselState extends State<_FeaturedCarousel> {
+  final _pageController = PageController(viewportFraction: 0.88);
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 220,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.products.length,
+            onPageChanged: (i) => setState(() => _currentPage = i),
+            itemBuilder: (context, i) {
+              final product = widget.products[i];
+              final images = List<String>.from(product['images'] ?? []);
+              final firstImage = images.isNotEmpty ? images[0] : null;
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: GestureDetector(
+                  onTap: () => context.push('/product/${product['id']}'),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (firstImage != null)
+                          CachedNetworkImage(
+                            imageUrl: firstImage,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(color: OrivaColors.surface),
+                            errorWidget: (_, __, ___) => Container(color: OrivaColors.surface),
+                          )
+                        else
+                          Container(color: OrivaColors.surface),
+                        // Gradient noir bas → transparent haut
+                        const Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [OrivaColors.black, Colors.transparent],
+                                stops: [0.0, 0.7],
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Overlay texte
+                        Positioned(
+                          left: 20,
+                          right: 20,
+                          bottom: 20,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                product['title'] ?? '',
+                                style: OrivaTypography.display(
+                                  size: 22,
+                                  weight: FontWeight.w500,
+                                  color: OrivaColors.gold,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                widget.formatPrice(product['price'] ?? 0),
+                                style: OrivaTypography.body(
+                                  size: 15,
+                                  weight: FontWeight.w600,
+                                  color: OrivaColors.gold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(widget.products.length, (i) {
+            final active = i == _currentPage;
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              height: 6,
+              width: active ? 18 : 6,
+              decoration: BoxDecoration(
+                color: active ? OrivaColors.gold : OrivaColors.border,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            );
+          }),
+        ),
+      ],
     );
   }
 }
