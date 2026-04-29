@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../orders/order_models.dart';
+import '../orders/order_providers.dart';
+import '../orders/order_repository.dart';
 import 'cart_provider.dart';
 
 class CartPage extends ConsumerWidget {
@@ -66,7 +70,6 @@ class CartPage extends ConsumerWidget {
             // ─── Récapitulatif + bouton checkout
             if (items.isNotEmpty)
               _CheckoutPanel(
-                items: items,
                 cart: cart,
                 formatPrice: _formatPrice,
               ),
@@ -262,23 +265,54 @@ class _EmptyCart extends StatelessWidget {
 }
 
 // ─── Panel checkout ────────────────────────────────────────────────────────
-class _CheckoutPanel extends StatelessWidget {
-  final List<CartItem> items;
+class _CheckoutPanel extends ConsumerWidget {
   final CartNotifier cart;
   final String Function(num) formatPrice;
 
   const _CheckoutPanel({
-    required this.items,
     required this.cart,
     required this.formatPrice,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final subtotal = cart.total;
-    // Livraison offerte au-dessus de 30 000 F CFA
-    final shipping = subtotal >= 30000 ? 0 : 2000;
+    const num shipping = 0;
     final total = subtotal + shipping;
+
+    final orderState = ref.watch(createOrderControllerProvider);
+    final isLoading = orderState.isLoading;
+
+    ref.listen<AsyncValue<CreateOrderResult?>>(
+      createOrderControllerProvider,
+      (previous, next) {
+        next.whenOrNull(
+          data: (result) {
+            if (result != null) {
+              final orderId = result.primaryOrderId;
+              ref.read(createOrderControllerProvider.notifier).reset();
+              context.go('/order-confirmation/$orderId');
+            }
+          },
+          error: (err, _) {
+            final msg = err is CreateOrderException
+                ? err.userMessage
+                : 'Erreur lors de la création de la commande.';
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  msg,
+                  style: OrivaTypography.body(color: OrivaColors.cream),
+                ),
+                backgroundColor: OrivaColors.danger,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+            ref.read(createOrderControllerProvider.notifier).reset();
+          },
+        );
+      },
+    );
 
     return Container(
       padding: EdgeInsets.fromLTRB(
@@ -289,58 +323,57 @@ class _CheckoutPanel extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Sous-total
           _SummaryRow(
-              label: 'Sous-total',
-              value: formatPrice(subtotal),
-              isMuted: true),
-          const SizedBox(height: 8),
-          // Livraison
-          _SummaryRow(
-            label: 'Livraison',
-            value: shipping == 0 ? 'Offerte 🎁' : formatPrice(shipping),
+            label: 'Sous-total',
+            value: formatPrice(subtotal),
             isMuted: true,
-            isGold: shipping == 0,
+          ),
+          const SizedBox(height: 8),
+          const _SummaryRow(
+            label: 'Livraison',
+            value: 'Offerte 🎁 (offre de lancement)',
+            isMuted: true,
+            isGold: true,
           ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
             child: Divider(color: OrivaColors.border, height: 1),
           ),
-          // Total
           _SummaryRow(
             label: 'Total',
             value: formatPrice(total),
             isBold: true,
           ),
           const SizedBox(height: 16),
-          // Bouton commander
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                // TODO Phase 2.5.3 — Créer commande Supabase
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Commande en cours de traitement…',
-                      style: OrivaTypography.body(
-                          color: OrivaColors.black),
-                    ),
-                    backgroundColor: OrivaColors.gold,
-                  ),
-                );
-              },
+              onPressed: isLoading
+                  ? null
+                  : () {
+                      ref.read(createOrderControllerProvider.notifier).submit();
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: OrivaColors.gold,
                 foregroundColor: OrivaColors.black,
                 padding: const EdgeInsets.symmetric(vertical: 18),
               ),
-              child: Text(
-                'Commander — ${formatPrice(total)}',
-                style: OrivaTypography.body(
-                    weight: FontWeight.w700,
-                    color: OrivaColors.black),
-              ),
+              child: isLoading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        color: OrivaColors.black,
+                      ),
+                    )
+                  : Text(
+                      'Commander — ${formatPrice(total)}',
+                      style: OrivaTypography.body(
+                        weight: FontWeight.w700,
+                        color: OrivaColors.black,
+                      ),
+                    ),
             ),
           ),
         ],

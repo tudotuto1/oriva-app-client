@@ -5,6 +5,7 @@ import '../../features/onboarding/onboarding_page.dart';
 import '../../features/auth/login_page.dart';
 import '../../features/auth/signup_page.dart';
 import '../../features/home/home_shell.dart';
+import '../../features/orders/order_confirmation_page.dart';
 import '../../features/product/product_detail_page.dart';
 import '../supabase/supabase_service.dart';
 
@@ -32,6 +33,12 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/product/:id',
       builder: (context, state) => ProductDetailPage(productId: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/order-confirmation/:id',
+      builder: (context, state) => OrderConfirmationPage(
+        orderId: state.pathParameters['id']!,
+      ),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(
