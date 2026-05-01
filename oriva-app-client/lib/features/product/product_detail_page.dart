@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -6,16 +7,18 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/supabase/supabase_service.dart';
+import '../cart/cart_provider.dart';
 
-class ProductDetailPage extends StatefulWidget {
+class ProductDetailPage extends ConsumerStatefulWidget {
   final String productId;
   const ProductDetailPage({super.key, required this.productId});
 
   @override
-  State<ProductDetailPage> createState() => _ProductDetailPageState();
+  ConsumerState<ProductDetailPage> createState() =>
+      _ProductDetailPageState();
 }
 
-class _ProductDetailPageState extends State<ProductDetailPage> {
+class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   Map<String, dynamic>? _product;
   Map<String, dynamic>? _vendor;
   bool _loading = true;
@@ -66,7 +69,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Widget build(BuildContext context) {
     if (_loading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: OrivaColors.gold)),
+        body: Center(
+            child: CircularProgressIndicator(color: OrivaColors.gold)),
       );
     }
 
@@ -92,9 +96,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             leading: Padding(
               padding: const EdgeInsets.all(8),
               child: CircleAvatar(
-                backgroundColor: OrivaColors.black.withValues(alpha: 0.6),
+                backgroundColor:
+                    OrivaColors.black.withValues(alpha: 0.6),
                 child: IconButton(
-                  icon: const Icon(LucideIcons.arrowLeft, color: OrivaColors.cream),
+                  icon: const Icon(LucideIcons.arrowLeft,
+                      color: OrivaColors.cream),
                   onPressed: () => context.pop(),
                 ),
               ),
@@ -106,7 +112,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       children: [
                         PageView.builder(
                           controller: _pageController,
-                          onPageChanged: (i) => setState(() => _currentImage = i),
+                          onPageChanged: (i) =>
+                              setState(() => _currentImage = i),
                           itemCount: images.length,
                           itemBuilder: (_, i) => CachedNetworkImage(
                             imageUrl: images[i],
@@ -120,16 +127,22 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             left: 0,
                             right: 0,
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center,
                               children: List.generate(
                                 images.length,
                                 (i) => Container(
-                                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 4),
                                   width: i == _currentImage ? 20 : 6,
                                   height: 6,
                                   decoration: BoxDecoration(
-                                    color: i == _currentImage ? OrivaColors.gold : OrivaColors.cream.withValues(alpha: 0.4),
-                                    borderRadius: BorderRadius.circular(3),
+                                    color: i == _currentImage
+                                        ? OrivaColors.gold
+                                        : OrivaColors.cream
+                                            .withValues(alpha: 0.4),
+                                    borderRadius:
+                                        BorderRadius.circular(3),
                                   ),
                                 ),
                               ),
@@ -154,16 +167,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           radius: 14,
                           backgroundColor: OrivaColors.surface,
                           backgroundImage: _vendor!['avatar_url'] != null
-                              ? CachedNetworkImageProvider(_vendor!['avatar_url'])
+                              ? CachedNetworkImageProvider(
+                                  _vendor!['avatar_url'])
                               : null,
                           child: _vendor!['avatar_url'] == null
-                              ? const Icon(LucideIcons.store, size: 14, color: OrivaColors.muted)
+                              ? const Icon(LucideIcons.store,
+                                  size: 14, color: OrivaColors.muted)
                               : null,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           _vendor!['display_name'] ?? 'Vendeur',
-                          style: OrivaTypography.body(size: 13, color: OrivaColors.muted),
+                          style: OrivaTypography.body(
+                              size: 13, color: OrivaColors.muted),
                         ),
                       ],
                     ),
@@ -172,7 +188,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                   Text(
                     _product!['title'] ?? '',
-                    style: OrivaTypography.display(size: 30, weight: FontWeight.w500),
+                    style: OrivaTypography.display(
+                        size: 30, weight: FontWeight.w500),
                   ),
                   const SizedBox(height: 12),
 
@@ -180,13 +197,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     children: [
                       Text(
                         _formatPrice(_product!['price'] ?? 0),
-                        style: OrivaTypography.display(size: 26, color: OrivaColors.gold, weight: FontWeight.w500),
+                        style: OrivaTypography.display(
+                            size: 26,
+                            color: OrivaColors.gold,
+                            weight: FontWeight.w500),
                       ),
                       const Spacer(),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: outOfStock ? OrivaColors.danger.withValues(alpha: 0.1) : OrivaColors.success.withValues(alpha: 0.1),
+                          color: outOfStock
+                              ? OrivaColors.danger.withValues(alpha: 0.1)
+                              : OrivaColors.success
+                                  .withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -194,7 +218,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           style: OrivaTypography.body(
                             size: 12,
                             weight: FontWeight.w500,
-                            color: outOfStock ? OrivaColors.danger : OrivaColors.success,
+                            color: outOfStock
+                                ? OrivaColors.danger
+                                : OrivaColors.success,
                           ),
                         ),
                       ),
@@ -205,7 +231,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   Text('DESCRIPTION', style: OrivaTypography.label()),
                   const SizedBox(height: 12),
                   Text(
-                    _product!['description'] ?? 'Aucune description disponible.',
+                    _product!['description'] ??
+                        'Aucune description disponible.',
                     style: OrivaTypography.body(size: 15),
                   ),
                   const SizedBox(height: 120),
@@ -216,7 +243,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ],
       ),
       bottomSheet: Container(
-        padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 16),
+        padding: EdgeInsets.fromLTRB(
+            24, 16, 24, MediaQuery.of(context).padding.bottom + 16),
         decoration: const BoxDecoration(
           color: OrivaColors.black,
           border: Border(top: BorderSide(color: OrivaColors.border)),
@@ -227,18 +255,47 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             onPressed: outOfStock
                 ? null
                 : () {
+                    final images =
+                        List<String>.from(_product!['images'] ?? []);
+                    ref.read(cartProvider.notifier).addItem(
+                          CartItem(
+                            id: _product!['id'].toString(),
+                            title: _product!['title'] ?? '',
+                            price: _product!['price'] ?? 0,
+                            imageUrl:
+                                images.isNotEmpty ? images[0] : null,
+                            stock: _product!['stock'] ?? 0,
+                          ),
+                        );
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Ajouté au panier', style: OrivaTypography.body(color: OrivaColors.black)),
+                        content: Text(
+                          '${_product!['title']} ajouté au panier',
+                          style: OrivaTypography.body(
+                              color: OrivaColors.black),
+                        ),
                         backgroundColor: OrivaColors.gold,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        action: SnackBarAction(
+                          label: 'Voir panier',
+                          textColor: OrivaColors.black,
+                          onPressed: () => context.go('/'),
+                        ),
                       ),
                     );
                   },
-            icon: Icon(outOfStock ? LucideIcons.x : LucideIcons.shoppingBag, size: 18),
-            label: Text(outOfStock ? 'Rupture de stock' : 'Ajouter au panier'),
+            icon: Icon(
+                outOfStock ? LucideIcons.x : LucideIcons.shoppingBag,
+                size: 18),
+            label: Text(
+                outOfStock ? 'Rupture de stock' : 'Ajouter au panier'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: outOfStock ? OrivaColors.surface : OrivaColors.gold,
-              foregroundColor: outOfStock ? OrivaColors.muted : OrivaColors.black,
+              backgroundColor:
+                  outOfStock ? OrivaColors.surface : OrivaColors.gold,
+              foregroundColor:
+                  outOfStock ? OrivaColors.muted : OrivaColors.black,
               padding: const EdgeInsets.symmetric(vertical: 18),
             ),
           ),
