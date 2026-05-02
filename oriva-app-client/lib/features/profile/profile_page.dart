@@ -83,7 +83,7 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildMenuItem(LucideIcons.package, 'Mes commandes', () {}),
           _buildMenuItem(LucideIcons.mapPin, 'Adresses de livraison', () {}),
           _buildMenuItem(LucideIcons.bell, 'Notifications', () {}),
-          _buildMenuItem(LucideIcons.circleHelp, 'Aide & support', () {}),
+          _buildMenuItem(LucideIcons.info, 'Aide & support', () {}),
 
           const SizedBox(height: 24),
 

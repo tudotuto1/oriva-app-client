@@ -111,7 +111,7 @@ class OrivaTheme {
         labelStyle: OrivaTypography.label(),
         hintStyle: OrivaTypography.body(color: OrivaColors.muted),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: OrivaColors.card,
         elevation: 0,
         shape: RoundedRectangleBorder(
