@@ -113,6 +113,37 @@ class OrderRepository {
           userMessage:
               'Stock insuffisant. Il ne reste que $stock unité(s) disponible(s).',
         );
+      case 'MISSING_VENDOR_PRICE_CNY':
+        return CreateOrderException(
+          code: code,
+          productId: parts.length > 1 ? parts[1].trim() : null,
+          userMessage:
+              'Un produit du panier n\'a pas encore son prix configuré. Réessayez dans un instant.',
+        );
+      case 'MISSING_WEIGHT':
+        return CreateOrderException(
+          code: code,
+          productId: parts.length > 1 ? parts[1].trim() : null,
+          userMessage:
+              'Un produit du panier n\'a pas son poids configuré. Veuillez le retirer.',
+        );
+      case 'INVALID_CURRENCY':
+        return CreateOrderException(
+          code: code,
+          productId: parts.length > 1 ? parts[1].trim() : null,
+          userMessage:
+              'Un produit a une configuration invalide. Veuillez le retirer du panier.',
+        );
+      case 'CART_BELOW_MINIMUM':
+        // Format : CART_BELOW_MINIMUM:<vendor_id>:<subtotal>:<minimum>
+        final subtotal = parts.length > 2 ? parts[2].trim() : '?';
+        final minimum = parts.length > 3 ? parts[3].trim() : '15000';
+        return CreateOrderException(
+          code: code,
+          extra: '$subtotal:$minimum',
+          userMessage:
+              'Votre panier est trop petit (sous-total : $subtotal FCFA). Le minimum est de $minimum FCFA.',
+        );
       case 'CANNOT_BUY_OWN_PRODUCT':
         return CreateOrderException(
           code: code,

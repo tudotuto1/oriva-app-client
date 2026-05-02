@@ -57,9 +57,8 @@ class _HomePageState extends State<HomePage> {
     setState(() => _loading = true);
     try {
       final response = await SupabaseService.client
-          .from('products')
+          .from('products_with_pricing')
           .select()
-          .eq('is_archived', false)
           .order('created_at', ascending: false);
       final products = List<Map<String, dynamic>>.from(response);
       setState(() {
@@ -281,7 +280,7 @@ class _HomePageState extends State<HomePage> {
                                             const SizedBox(width: 8),
                                             Text(
                                               _formatPrice(
-                                                  product['price'] ?? 0),
+                                                  product['display_price'] ?? 0),
                                               style: OrivaTypography.body(
                                                 size: 15,
                                                 color: OrivaColors.gold,
@@ -495,7 +494,7 @@ class _ProductCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          formatPrice(product['price'] ?? 0),
+                          formatPrice(product['display_price'] ?? 0),
                           style: OrivaTypography.body(
                             size: 14,
                             color: OrivaColors.gold,

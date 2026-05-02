@@ -34,7 +34,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   Future<void> _loadProduct() async {
     try {
       final product = await SupabaseService.client
-          .from('products')
+          .from('products_with_pricing')
           .select()
           .eq('id', widget.productId)
           .single();
@@ -195,12 +195,27 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
 
                   Row(
                     children: [
-                      Text(
-                        _formatPrice(_product!['price'] ?? 0),
-                        style: OrivaTypography.display(
-                            size: 26,
-                            color: OrivaColors.gold,
-                            weight: FontWeight.w500),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _formatPrice(_product!['display_price'] ?? 0),
+                            style: OrivaTypography.display(
+                                size: 26,
+                                color: OrivaColors.gold,
+                                weight: FontWeight.w500),
+                          ),
+                          if (_product!['shipping_fee_estimate'] != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              '+ ${_formatPrice(_product!['shipping_fee_estimate'])} de livraison estimée',
+                              style: OrivaTypography.body(
+                                size: 12,
+                                color: OrivaColors.muted,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       const Spacer(),
                       Container(
@@ -261,7 +276,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                           CartItem(
                             id: _product!['id'].toString(),
                             title: _product!['title'] ?? '',
-                            price: _product!['price'] ?? 0,
+                            price: _product!['display_price'] ?? 0,
+                            weightGrams: _product!['weight_grams'] ?? 0,
                             imageUrl:
                                 images.isNotEmpty ? images[0] : null,
                             stock: _product!['stock'] ?? 0,

@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/pricing/pricing_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../orders/order_models.dart';
 import '../orders/order_providers.dart';
@@ -265,7 +266,7 @@ class _EmptyCart extends StatelessWidget {
 }
 
 // ─── Panel checkout ────────────────────────────────────────────────────────
-class _CheckoutPanel extends ConsumerWidget {
+class _CheckoutPanel extends ConsumerStatefulWidget {
   final CartNotifier cart;
   final String Function(num) formatPrice;
 
@@ -275,10 +276,62 @@ class _CheckoutPanel extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final subtotal = cart.total;
-    const num shipping = 0;
+  ConsumerState<_CheckoutPanel> createState() => _CheckoutPanelState();
+}
+
+class _CheckoutPanelState extends ConsumerState<_CheckoutPanel> {
+  int? _shippingFee;
+  bool _loadingShipping = false;
+  int? _lastFetchedWeight;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchShipping();
+  }
+
+  @override
+  void didUpdateWidget(covariant _CheckoutPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _fetchShipping();
+  }
+
+  Future<void> _fetchShipping() async {
+    final weight = widget.cart.totalWeightGrams;
+    if (weight == _lastFetchedWeight) return; // pas de re-fetch inutile
+    _lastFetchedWeight = weight;
+
+    if (weight <= 0) {
+      setState(() => _shippingFee = 0);
+      return;
+    }
+
+    setState(() => _loadingShipping = true);
+    final fee = await PricingService.calculateShippingFee(weight);
+    if (!mounted) return;
+    setState(() {
+      _shippingFee = fee;
+      _loadingShipping = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // On observe le state du panier pour rafraîchir la livraison
+    ref.watch(cartProvider);
+    // Refetch automatique si poids a changé
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_lastFetchedWeight != widget.cart.totalWeightGrams) {
+        _fetchShipping();
+      }
+    });
+
+    final subtotal = widget.cart.total;
+    final shipping = _shippingFee ?? 0;
     final total = subtotal + shipping;
+
+    final belowMinimum = subtotal < PricingService.minimumCartFcfa;
+    final missingAmount = PricingService.minimumCartFcfa - subtotal;
 
     final orderState = ref.watch(createOrderControllerProvider);
     final isLoading = orderState.isLoading;
@@ -325,15 +378,19 @@ class _CheckoutPanel extends ConsumerWidget {
         children: [
           _SummaryRow(
             label: 'Sous-total',
-            value: formatPrice(subtotal),
+            value: widget.formatPrice(subtotal),
             isMuted: true,
           ),
           const SizedBox(height: 8),
-          const _SummaryRow(
+          _SummaryRow(
             label: 'Livraison',
-            value: 'Offerte 🎁 (offre de lancement)',
+            value: _loadingShipping
+                ? '…'
+                : (shipping > 0
+                    ? widget.formatPrice(shipping)
+                    : 'À calculer'),
             isMuted: true,
-            isGold: true,
+            isGold: false,
           ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
@@ -341,14 +398,46 @@ class _CheckoutPanel extends ConsumerWidget {
           ),
           _SummaryRow(
             label: 'Total',
-            value: formatPrice(total),
+            value: widget.formatPrice(total),
             isBold: true,
           ),
+
+          // ─── Message panier minimum
+          if (belowMinimum) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: OrivaColors.warning.withValues(alpha: 0.1),
+                border:
+                    Border.all(color: OrivaColors.warning.withValues(alpha: 0.3)),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Icon(LucideIcons.info,
+                      size: 16, color: OrivaColors.warning),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Encore ${widget.formatPrice(missingAmount)} pour atteindre le minimum de commande',
+                      style: OrivaTypography.body(
+                        size: 12,
+                        color: OrivaColors.warning,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: isLoading
+              onPressed: (isLoading || belowMinimum)
                   ? null
                   : () {
                       ref.read(createOrderControllerProvider.notifier).submit();
@@ -356,6 +445,9 @@ class _CheckoutPanel extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: OrivaColors.gold,
                 foregroundColor: OrivaColors.black,
+                disabledBackgroundColor:
+                    OrivaColors.surface,
+                disabledForegroundColor: OrivaColors.muted,
                 padding: const EdgeInsets.symmetric(vertical: 18),
               ),
               child: isLoading
@@ -368,10 +460,11 @@ class _CheckoutPanel extends ConsumerWidget {
                       ),
                     )
                   : Text(
-                      'Commander — ${formatPrice(total)}',
+                      belowMinimum
+                          ? 'Continuer mes achats'
+                          : 'Commander — ${widget.formatPrice(total)}',
                       style: OrivaTypography.body(
                         weight: FontWeight.w700,
-                        color: OrivaColors.black,
                       ),
                     ),
             ),

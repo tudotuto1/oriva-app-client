@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class CartItem {
   final String id;
   final String title;
-  final num price;
+  final num price;            // display_price (prix client final)
+  final int weightGrams;      // NOUVEAU — pour calcul livraison panier
   final String? imageUrl;
   final int stock;
   int quantity;
@@ -13,6 +14,7 @@ class CartItem {
     required this.id,
     required this.title,
     required this.price,
+    required this.weightGrams,
     this.imageUrl,
     required this.stock,
     this.quantity = 1,
@@ -22,6 +24,7 @@ class CartItem {
         id: id,
         title: title,
         price: price,
+        weightGrams: weightGrams,
         imageUrl: imageUrl,
         stock: stock,
         quantity: quantity ?? this.quantity,
@@ -36,7 +39,6 @@ class CartNotifier extends Notifier<List<CartItem>> {
   void addItem(CartItem newItem) {
     final idx = state.indexWhere((e) => e.id == newItem.id);
     if (idx >= 0) {
-      // Déjà dans le panier — incrémenter si stock disponible
       final existing = state[idx];
       if (existing.quantity < existing.stock) {
         state = [
@@ -84,6 +86,8 @@ class CartNotifier extends Notifier<List<CartItem>> {
   // ─── Getters utiles
   num get total => state.fold(0, (sum, e) => sum + e.price * e.quantity);
   int get itemCount => state.fold(0, (sum, e) => sum + e.quantity);
+  int get totalWeightGrams =>
+      state.fold(0, (sum, e) => sum + e.weightGrams * e.quantity);
   bool contains(String id) => state.any((e) => e.id == id);
 }
 
@@ -91,9 +95,6 @@ class CartNotifier extends Notifier<List<CartItem>> {
 final cartProvider =
     NotifierProvider<CartNotifier, List<CartItem>>(CartNotifier.new);
 
-// Provider dérivé — juste le nombre d'articles (pour le badge)
-// Bug fix : on watch cartProvider (le state) et non cartProvider.notifier,
-// sinon le Provider ne se rebuild jamais et le badge reste à 0.
 final cartCountProvider = Provider<int>((ref) {
   final items = ref.watch(cartProvider);
   return items.fold<int>(0, (sum, e) => sum + e.quantity);
