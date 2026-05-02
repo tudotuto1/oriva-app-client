@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/supabase/supabase_service.dart';
@@ -69,8 +70,20 @@ class OrderRepository {
   }
 
   CreateOrderException _parseError(String rawMessage) {
-    final parts = rawMessage.split(':');
-    final code = parts.first.trim();
+    String cleanMessage = rawMessage.trim();
+
+    final codeMatch =
+        RegExp(r'\b([A-Z][A-Z_]+)(:|\s|$)').firstMatch(cleanMessage);
+    final code = codeMatch?.group(1) ?? cleanMessage.split(':').first.trim();
+
+    List<String> parts = [];
+    if (codeMatch != null) {
+      final codePos = cleanMessage.indexOf(code);
+      final afterCode = cleanMessage.substring(codePos + code.length);
+      if (afterCode.startsWith(':')) {
+        parts = afterCode.substring(1).split(':');
+      }
+    }
 
     switch (code) {
       case 'NOT_AUTHENTICATED':
@@ -86,26 +99,26 @@ class OrderRepository {
       case 'INVALID_QUANTITY':
         return CreateOrderException(
           code: code,
-          productId: parts.length > 1 ? parts[1].trim() : null,
+          productId: parts.isNotEmpty ? parts[0].trim() : null,
           userMessage: 'Quantité invalide pour un des produits.',
         );
       case 'PRODUCT_NOT_FOUND':
         return CreateOrderException(
           code: code,
-          productId: parts.length > 1 ? parts[1].trim() : null,
+          productId: parts.isNotEmpty ? parts[0].trim() : null,
           userMessage:
               'Un produit de votre panier n\'est plus disponible. Veuillez le retirer.',
         );
       case 'PRODUCT_ARCHIVED':
         return CreateOrderException(
           code: code,
-          productId: parts.length > 1 ? parts[1].trim() : null,
+          productId: parts.isNotEmpty ? parts[0].trim() : null,
           userMessage:
               'Un produit a été retiré de la vente. Veuillez le retirer du panier.',
         );
       case 'OUT_OF_STOCK':
-        final productId = parts.length > 1 ? parts[1].trim() : null;
-        final stock = parts.length > 2 ? parts[2].trim() : '?';
+        final productId = parts.isNotEmpty ? parts[0].trim() : null;
+        final stock = parts.length > 1 ? parts[1].trim() : '?';
         return CreateOrderException(
           code: code,
           productId: productId,
@@ -116,14 +129,50 @@ class OrderRepository {
       case 'CANNOT_BUY_OWN_PRODUCT':
         return CreateOrderException(
           code: code,
-          productId: parts.length > 1 ? parts[1].trim() : null,
+          productId: parts.isNotEmpty ? parts[0].trim() : null,
           userMessage: 'Vous ne pouvez pas acheter vos propres produits.',
         );
+      case 'MISSING_VENDOR_PRICE_CNY':
+        return CreateOrderException(
+          code: code,
+          productId: parts.isNotEmpty ? parts[0].trim() : null,
+          userMessage:
+              'Un produit du panier n\'a pas encore son prix configuré. Réessayez dans un instant.',
+        );
+      case 'MISSING_WEIGHT':
+        return CreateOrderException(
+          code: code,
+          productId: parts.isNotEmpty ? parts[0].trim() : null,
+          userMessage:
+              'Un produit du panier n\'a pas son poids configuré. Veuillez le retirer.',
+        );
+      case 'INVALID_CURRENCY':
+        return CreateOrderException(
+          code: code,
+          productId: parts.isNotEmpty ? parts[0].trim() : null,
+          userMessage:
+              'Un produit a une configuration invalide. Veuillez le retirer du panier.',
+        );
+      case 'CART_BELOW_MINIMUM':
+        final subtotalStr = parts.length > 1 ? parts[1].trim() : '0';
+        final minimumStr = parts.length > 2 ? parts[2].trim() : '15000';
+        final subtotal = int.tryParse(subtotalStr) ?? 0;
+        final minimum = int.tryParse(minimumStr) ?? 15000;
+        final missing = (minimum - subtotal).clamp(0, minimum);
+        final formatter = NumberFormat('#,###', 'fr_FR');
+        final missingFormatted =
+            formatter.format(missing).replaceAll(',', ' ');
+        return CreateOrderException(
+          code: code,
+          extra: '$subtotal:$minimum',
+          userMessage:
+              'Encore $missingFormatted F CFA pour atteindre le minimum de commande.',
+        );
       default:
-        return const CreateOrderException(
+        return CreateOrderException(
           code: 'UNKNOWN',
           userMessage:
-              'Erreur lors de la création de la commande. Réessayez.',
+              'Erreur lors de la création de la commande. Réessayez.\n[debug: $rawMessage]',
         );
     }
   }

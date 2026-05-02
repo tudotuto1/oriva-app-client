@@ -281,7 +281,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                         action: SnackBarAction(
                           label: 'Voir panier',
                           textColor: OrivaColors.black,
-                          onPressed: () => context.go('/'),
+                          onPressed: () => context.go('/cart'),
                         ),
                       ),
                     );
