@@ -465,6 +465,9 @@ class _CheckoutPanelState extends ConsumerState<_CheckoutPanel> {
                           : 'Commander — ${widget.formatPrice(total)}',
                       style: OrivaTypography.body(
                         weight: FontWeight.w700,
+                        color: belowMinimum
+                            ? OrivaColors.muted
+                            : OrivaColors.black,
                       ),
                     ),
             ),
