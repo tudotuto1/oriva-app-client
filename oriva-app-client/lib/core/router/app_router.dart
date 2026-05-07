@@ -6,8 +6,10 @@ import '../../features/auth/login_page.dart';
 import '../../features/auth/signup_page.dart';
 import '../../features/home/home_shell.dart';
 import '../../features/orders/order_confirmation_page.dart';
+import '../../features/orders/order_history_page.dart';
 import '../../features/payment/payment_page.dart';
 import '../../features/product/product_detail_page.dart';
+import '../../features/profile/edit_profile_page.dart';
 import '../supabase/supabase_service.dart';
 
 final appRouter = GoRouter(
@@ -51,6 +53,14 @@ final appRouter = GoRouter(
             : 0;
         return PaymentPage(orderId: orderId, totalFcfa: totalFcfa);
       },
+    ),
+    GoRoute(
+      path: '/order-history',
+      builder: (context, state) => const OrderHistoryPage(),
+    ),
+    GoRoute(
+      path: '/edit-profile',
+      builder: (context, state) => const EditProfilePage(),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(
