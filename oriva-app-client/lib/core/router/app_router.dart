@@ -7,6 +7,8 @@ import '../../features/auth/signup_page.dart';
 import '../../features/home/home_shell.dart';
 import '../../features/orders/order_confirmation_page.dart';
 import '../../features/product/product_detail_page.dart';
+import '../../features/addresses/addresses_page.dart';
+import '../../features/addresses/address_form_page.dart';
 import '../supabase/supabase_service.dart';
 
 final appRouter = GoRouter(
@@ -39,6 +41,19 @@ final appRouter = GoRouter(
       builder: (context, state) => OrderConfirmationPage(
         orderId: state.pathParameters['id']!,
       ),
+    ),
+    GoRoute(
+      path: '/addresses',
+      builder: (_, __) => const AddressesPage(),
+    ),
+    GoRoute(
+      path: '/address/new',
+      builder: (_, __) => const AddressFormPage(),
+    ),
+    GoRoute(
+      path: '/address/edit/:id',
+      builder: (_, state) =>
+          AddressFormPage(addressId: state.pathParameters['id']),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(
