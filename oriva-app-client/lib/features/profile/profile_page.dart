@@ -84,7 +84,8 @@ class _ProfilePageState extends State<ProfilePage> {
               () => context.push('/order-history')),
           _buildMenuItem(LucideIcons.userPen, 'Modifier le profil',
               () => context.push('/edit-profile')),
-          _buildMenuItem(LucideIcons.mapPin, 'Adresses de livraison', () {}),
+          _buildMenuItem(LucideIcons.mapPin, 'Adresses de livraison',
+              () => context.push('/addresses')),
           _buildMenuItem(LucideIcons.bell, 'Notifications', () {}),
           _buildMenuItem(LucideIcons.info, 'Aide & support', () {}),
 
