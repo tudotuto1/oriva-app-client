@@ -22,7 +22,7 @@ class PaymentRepository {
         'initiate_payment',
         body: {
           'order_id': orderId,
-          'phone': phoneLocal8Digits,
+          'phone_number': phoneLocal8Digits,
           'country_code': 'BF',
         },
       );
