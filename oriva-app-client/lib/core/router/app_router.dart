@@ -6,6 +6,7 @@ import '../../features/auth/login_page.dart';
 import '../../features/auth/signup_page.dart';
 import '../../features/home/home_shell.dart';
 import '../../features/orders/order_confirmation_page.dart';
+import '../../features/payment/payment_page.dart';
 import '../../features/product/product_detail_page.dart';
 import '../supabase/supabase_service.dart';
 
@@ -39,6 +40,17 @@ final appRouter = GoRouter(
       builder: (context, state) => OrderConfirmationPage(
         orderId: state.pathParameters['id']!,
       ),
+    ),
+    GoRoute(
+      path: '/payment/:orderId',
+      builder: (context, state) {
+        final orderId = state.pathParameters['orderId']!;
+        final extra = state.extra;
+        final totalFcfa = (extra is Map && extra['totalFcfa'] is int)
+            ? extra['totalFcfa'] as int
+            : 0;
+        return PaymentPage(orderId: orderId, totalFcfa: totalFcfa);
+      },
     ),
   ],
   errorBuilder: (context, state) => Scaffold(

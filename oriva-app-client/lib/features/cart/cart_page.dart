@@ -343,8 +343,12 @@ class _CheckoutPanelState extends ConsumerState<_CheckoutPanel> {
           data: (result) {
             if (result != null) {
               final orderId = result.primaryOrderId;
+              final totalFcfa = result.totalAmount.toInt();
               ref.read(createOrderControllerProvider.notifier).reset();
-              context.go('/order-confirmation/$orderId');
+              context.go(
+                '/payment/$orderId',
+                extra: {'totalFcfa': totalFcfa},
+              );
             }
           },
           error: (err, _) {
