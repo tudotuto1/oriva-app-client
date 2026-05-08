@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -8,19 +11,22 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/supabase/supabase_service.dart';
+import '../categories/category_providers.dart';
+import '../categories/widgets/category_chips.dart';
+import 'search_providers.dart';
 import 'widgets/product_grid_skeleton.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   final _searchController = TextEditingController();
+  Timer? _searchDebounce;
   List<Map<String, dynamic>> _allProducts = [];
-  List<Map<String, dynamic>> _filteredProducts = [];
   bool _loading = true;
   int _carouselIndex = 0;
 
@@ -28,31 +34,25 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadProducts();
-    _searchController.addListener(_onSearch);
   }
 
   @override
   void dispose() {
-    _searchController.removeListener(_onSearch);
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
-  void _onSearch() {
-    final query = _searchController.text.toLowerCase().trim();
-    setState(() {
-      _filteredProducts = query.isEmpty
-          ? _allProducts
-          : _allProducts
-              .where((p) =>
-                  (p['title'] as String? ?? '')
-                      .toLowerCase()
-                      .contains(query) ||
-                  (p['description'] as String? ?? '')
-                      .toLowerCase()
-                      .contains(query))
-              .toList();
-    });
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(
+      const Duration(milliseconds: 250),
+      () {
+        if (!mounted) return;
+        ref.read(searchQueryProvider.notifier).state = value.trim();
+      },
+    );
+    setState(() {}); // refresh suffix icon visibility
   }
 
   Future<void> _loadProducts() async {
@@ -65,7 +65,6 @@ class _HomePageState extends State<HomePage> {
       final products = List<Map<String, dynamic>>.from(response);
       setState(() {
         _allProducts = products;
-        _filteredProducts = products;
         _loading = false;
       });
     } catch (e) {
@@ -73,12 +72,19 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  String _formatPrice(num price) {
-    final formatter = NumberFormat('#,###', 'fr_FR');
-    return '${formatter.format(price).replaceAll(',', '\u202f')} F CFA';
+  void _resetFilters() {
+    _searchController.clear();
+    _searchDebounce?.cancel();
+    ref.read(searchQueryProvider.notifier).state = '';
+    ref.read(selectedCategoryIdProvider.notifier).state = null;
+    setState(() {});
   }
 
-  // Les 5 produits les plus récents avec image pour le carrousel
+  String _formatPrice(num price) {
+    final formatter = NumberFormat('#,###', 'fr_FR');
+    return '${formatter.format(price).replaceAll(',', ' ')} F CFA';
+  }
+
   List<Map<String, dynamic>> get _carouselProducts {
     return _allProducts
         .where((p) {
@@ -89,8 +95,32 @@ class _HomePageState extends State<HomePage> {
         .toList();
   }
 
+  List<Map<String, dynamic>> _applyFilters({
+    required String query,
+    required String? categoryId,
+  }) {
+    final q = query.toLowerCase();
+    return _allProducts.where((p) {
+      if (categoryId != null) {
+        final pid = p['category_id']?.toString();
+        if (pid != categoryId) return false;
+      }
+      if (q.isNotEmpty) {
+        final title = (p['title'] as String? ?? '').toLowerCase();
+        final desc = (p['description'] as String? ?? '').toLowerCase();
+        if (!title.contains(q) && !desc.contains(q)) return false;
+      }
+      return true;
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final query = ref.watch(searchQueryProvider);
+    final selectedCatId = ref.watch(selectedCategoryIdProvider);
+    final filtered = _applyFilters(query: query, categoryId: selectedCatId);
+    final hasActiveFilter = query.isNotEmpty || selectedCatId != null;
+
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
@@ -310,12 +340,18 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
 
+              // ─── Catégories chips
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
+              const SliverToBoxAdapter(child: CategoryChipsBar()),
+              const SliverToBoxAdapter(child: SizedBox(height: 12)),
+
               // ─── Barre de recherche
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: TextField(
                     controller: _searchController,
+                    onChanged: _onSearchChanged,
                     decoration: InputDecoration(
                       hintText: 'Rechercher un produit…',
                       prefixIcon:
@@ -325,6 +361,11 @@ class _HomePageState extends State<HomePage> {
                               icon: const Icon(LucideIcons.x, size: 16),
                               onPressed: () {
                                 _searchController.clear();
+                                _searchDebounce?.cancel();
+                                ref
+                                    .read(searchQueryProvider.notifier)
+                                    .state = '';
+                                setState(() {});
                               },
                             )
                           : null,
@@ -342,9 +383,7 @@ class _HomePageState extends State<HomePage> {
                   child: Row(
                     children: [
                       Text(
-                        _searchController.text.isEmpty
-                            ? 'Tous les produits'
-                            : 'Résultats',
+                        hasActiveFilter ? 'Résultats' : 'Tous les produits',
                         style: OrivaTypography.label(),
                       ),
                       const SizedBox(width: 8),
@@ -358,7 +397,7 @@ class _HomePageState extends State<HomePage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            '${_filteredProducts.length}',
+                            '${filtered.length}',
                             style: OrivaTypography.body(
                                 size: 12, color: OrivaColors.gold),
                           ),
@@ -373,24 +412,41 @@ class _HomePageState extends State<HomePage> {
                 const SliverToBoxAdapter(
                   child: ProductGridSkeleton(),
                 )
-              else if (_filteredProducts.isEmpty)
+              else if (filtered.isEmpty)
                 SliverFillRemaining(
+                  hasScrollBody: false,
                   child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(LucideIcons.packageOpen,
-                            size: 48, color: OrivaColors.muted),
-                        const SizedBox(height: 16),
-                        Text(
-                          _searchController.text.isEmpty
-                              ? 'Aucun produit pour le moment'
-                              : 'Aucun résultat pour "${_searchController.text}"',
-                          style: OrivaTypography.body(
-                              color: OrivaColors.muted),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(LucideIcons.packageOpen,
+                              size: 48, color: OrivaColors.muted),
+                          const SizedBox(height: 16),
+                          Text(
+                            hasActiveFilter
+                                ? 'Aucun produit ne correspond aux filtres'
+                                : 'Aucun produit pour le moment',
+                            style: OrivaTypography.body(
+                                color: OrivaColors.muted),
+                            textAlign: TextAlign.center,
+                          ),
+                          if (hasActiveFilter) ...[
+                            const SizedBox(height: 16),
+                            TextButton.icon(
+                              onPressed: _resetFilters,
+                              icon: const Icon(LucideIcons.x,
+                                  size: 16, color: OrivaColors.gold),
+                              label: Text(
+                                'Effacer les filtres',
+                                style: OrivaTypography.body(
+                                    size: 14, color: OrivaColors.gold),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   ),
                 )
@@ -407,10 +463,10 @@ class _HomePageState extends State<HomePage> {
                     ),
                     delegate: SliverChildBuilderDelegate(
                       (context, i) => _ProductCard(
-                        product: _filteredProducts[i],
+                        product: filtered[i],
                         formatPrice: _formatPrice,
                       ),
-                      childCount: _filteredProducts.length,
+                      childCount: filtered.length,
                     ),
                   ),
                 ),

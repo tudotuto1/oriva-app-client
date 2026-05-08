@@ -10,6 +10,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/supabase/supabase_service.dart';
 import '../cart/cart_provider.dart';
 import '../home/home_shell.dart';
+import 'widgets/image_zoom_page.dart';
 
 class ProductDetailPage extends ConsumerStatefulWidget {
   final String productId;
@@ -130,14 +131,27 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                               fit: BoxFit.cover,
                               width: double.infinity,
                             );
-                            if (i == 0) {
-                              return Hero(
-                                tag:
-                                    'product-image-${_product!['id']}',
-                                child: image,
-                              );
-                            }
-                            return image;
+                            final wrapped = i == 0
+                                ? Hero(
+                                    tag:
+                                        'product-image-${_product!['id']}',
+                                    child: image,
+                                  )
+                                : image;
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (_) => ImageZoomPage(
+                                      imageUrls: images,
+                                      initialIndex: i,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: wrapped,
+                            );
                           },
                         ),
                         if (images.length > 1)
