@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'address_models.dart';
@@ -61,6 +62,7 @@ class AddressesPage extends ConsumerWidget {
               address: list[i],
               onTap: () => context.push('/address/edit/${list[i].id}'),
               onSetDefault: () async {
+                HapticFeedback.lightImpact();
                 try {
                   await ref
                       .read(addressRepositoryProvider)
@@ -100,6 +102,7 @@ class AddressesPage extends ConsumerWidget {
                   ),
                 );
                 if (confirmed == true) {
+                  HapticFeedback.mediumImpact();
                   try {
                     await ref
                         .read(addressRepositoryProvider)

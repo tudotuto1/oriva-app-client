@@ -54,35 +54,52 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/payment/:orderId',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final orderId = state.pathParameters['orderId']!;
         final extra = state.extra;
         final totalFcfa = (extra is Map && extra['totalFcfa'] is int)
             ? extra['totalFcfa'] as int
             : 0;
-        return PaymentPage(orderId: orderId, totalFcfa: totalFcfa);
+        return orivaPageTransition(
+          key: state.pageKey,
+          child: PaymentPage(orderId: orderId, totalFcfa: totalFcfa),
+        );
       },
     ),
     GoRoute(
       path: '/order-history',
-      builder: (context, state) => const OrderHistoryPage(),
+      pageBuilder: (context, state) => orivaPageTransition(
+        key: state.pageKey,
+        child: const OrderHistoryPage(),
+      ),
     ),
     GoRoute(
       path: '/edit-profile',
-      builder: (context, state) => const EditProfilePage(),
+      pageBuilder: (context, state) => orivaPageTransition(
+        key: state.pageKey,
+        child: const EditProfilePage(),
+      ),
     ),
     GoRoute(
       path: '/addresses',
-      builder: (_, __) => const AddressesPage(),
+      pageBuilder: (context, state) => orivaPageTransition(
+        key: state.pageKey,
+        child: const AddressesPage(),
+      ),
     ),
     GoRoute(
       path: '/address/new',
-      builder: (_, __) => const AddressFormPage(),
+      pageBuilder: (context, state) => orivaPageTransition(
+        key: state.pageKey,
+        child: const AddressFormPage(),
+      ),
     ),
     GoRoute(
       path: '/address/edit/:id',
-      builder: (_, state) =>
-          AddressFormPage(addressId: state.pathParameters['id']),
+      pageBuilder: (context, state) => orivaPageTransition(
+        key: state.pageKey,
+        child: AddressFormPage(addressId: state.pathParameters['id']),
+      ),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(
