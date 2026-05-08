@@ -13,6 +13,7 @@ import '../../features/profile/edit_profile_page.dart';
 import '../../features/addresses/addresses_page.dart';
 import '../../features/addresses/address_form_page.dart';
 import '../supabase/supabase_service.dart';
+import 'page_transitions.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/onboarding',
@@ -37,12 +38,18 @@ final appRouter = GoRouter(
     GoRoute(path: '/home', builder: (context, state) => const HomeShell()),
     GoRoute(
       path: '/product/:id',
-      builder: (context, state) => ProductDetailPage(productId: state.pathParameters['id']!),
+      pageBuilder: (context, state) => orivaPageTransition(
+        key: state.pageKey,
+        child: ProductDetailPage(productId: state.pathParameters['id']!),
+      ),
     ),
     GoRoute(
       path: '/order-confirmation/:id',
-      builder: (context, state) => OrderConfirmationPage(
-        orderId: state.pathParameters['id']!,
+      pageBuilder: (context, state) => orivaPageTransition(
+        key: state.pageKey,
+        child: OrderConfirmationPage(
+          orderId: state.pathParameters['id']!,
+        ),
       ),
     ),
     GoRoute(

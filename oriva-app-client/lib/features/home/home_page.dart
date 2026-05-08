@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -231,15 +232,19 @@ class _HomePageState extends State<HomePage> {
                                 child: Stack(
                                   fit: StackFit.expand,
                                   children: [
-                                    CachedNetworkImage(
-                                      imageUrl: images[0],
-                                      fit: BoxFit.cover,
-                                      placeholder: (_, __) => Container(
-                                          color: OrivaColors.surface),
-                                      errorWidget: (_, __, ___) => Container(
-                                        color: OrivaColors.surface,
-                                        child: const Icon(LucideIcons.image,
-                                            color: OrivaColors.muted),
+                                    Hero(
+                                      tag:
+                                          'product-image-carousel-${product['id']}',
+                                      child: CachedNetworkImage(
+                                        imageUrl: images[0],
+                                        fit: BoxFit.cover,
+                                        placeholder: (_, __) => Container(
+                                            color: OrivaColors.surface),
+                                        errorWidget: (_, __, ___) => Container(
+                                          color: OrivaColors.surface,
+                                          child: const Icon(LucideIcons.image,
+                                              color: OrivaColors.muted),
+                                        ),
                                       ),
                                     ),
                                     // Overlay gradient + infos
@@ -435,7 +440,10 @@ class _ProductCard extends StatelessWidget {
     final stock = product['stock'] ?? 0;
 
     return GestureDetector(
-      onTap: () => context.push('/product/${product['id']}'),
+      onTap: () {
+        HapticFeedback.selectionClick();
+        context.push('/product/${product['id']}');
+      },
       child: Container(
         decoration: BoxDecoration(
           color: OrivaColors.card,
@@ -452,16 +460,19 @@ class _ProductCard extends StatelessWidget {
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(16)),
                 child: firstImage != null
-                    ? CachedNetworkImage(
-                        imageUrl: firstImage,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        placeholder: (_, __) =>
-                            Container(color: OrivaColors.surface),
-                        errorWidget: (_, __, ___) => Container(
-                          color: OrivaColors.surface,
-                          child: const Icon(LucideIcons.imageOff,
-                              color: OrivaColors.muted),
+                    ? Hero(
+                        tag: 'product-image-${product['id']}',
+                        child: CachedNetworkImage(
+                          imageUrl: firstImage,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          placeholder: (_, __) =>
+                              Container(color: OrivaColors.surface),
+                          errorWidget: (_, __, ___) => Container(
+                            color: OrivaColors.surface,
+                            child: const Icon(LucideIcons.imageOff,
+                                color: OrivaColors.muted),
+                          ),
                         ),
                       )
                     : Container(
