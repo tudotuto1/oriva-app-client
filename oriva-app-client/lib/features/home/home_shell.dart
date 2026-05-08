@@ -8,6 +8,8 @@ import '../cart/cart_page.dart';
 import '../cart/cart_provider.dart';
 import '../profile/profile_page.dart';
 
+final homeTabIndexProvider = StateProvider<int>((_) => 0);
+
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
 
@@ -16,23 +18,23 @@ class HomeShell extends ConsumerStatefulWidget {
 }
 
 class _HomeShellState extends ConsumerState<HomeShell> {
-  int _currentIndex = 0;
-
   final _pages = const [HomePage(), CartPage(), ProfilePage()];
 
   @override
   Widget build(BuildContext context) {
     final cartCount = ref.watch(cartCountProvider);
+    final currentIndex = ref.watch(homeTabIndexProvider);
 
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(index: currentIndex, children: _pages),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           border: Border(top: BorderSide(color: OrivaColors.border)),
         ),
         child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (i) => setState(() => _currentIndex = i),
+          currentIndex: currentIndex,
+          onTap: (i) =>
+              ref.read(homeTabIndexProvider.notifier).state = i,
           items: [
             const BottomNavigationBarItem(
               icon: Icon(LucideIcons.house),

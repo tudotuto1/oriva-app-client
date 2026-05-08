@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/supabase/supabase_service.dart';
 import '../cart/cart_provider.dart';
+import '../home/home_shell.dart';
 
 class ProductDetailPage extends ConsumerStatefulWidget {
   final String productId;
@@ -322,7 +323,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                         action: SnackBarAction(
                           label: 'Voir panier',
                           textColor: OrivaColors.black,
-                          onPressed: () => context.go('/cart'),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context)
+                                .hideCurrentSnackBar();
+                            ref
+                                .read(homeTabIndexProvider.notifier)
+                                .state = 1;
+                            context.go('/home');
+                          },
                         ),
                       ),
                     );
