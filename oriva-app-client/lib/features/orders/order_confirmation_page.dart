@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/animated_success.dart';
 
 class OrderConfirmationPage extends StatelessWidget {
   final String orderId;
@@ -23,18 +23,7 @@ class OrderConfirmationPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                width: 96,
-                height: 96,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: OrivaColors.gold.withValues(alpha: 0.15),
-                  border: Border.all(color: OrivaColors.gold, width: 1.5),
-                ),
-                child: const Icon(LucideIcons.check,
-                    size: 48, color: OrivaColors.gold),
-              ),
+              const Center(child: AnimatedSuccessCheck(size: 96)),
               const SizedBox(height: 32),
               Text(
                 'Commande passée',

@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/supabase/supabase_service.dart';
+import 'widgets/product_grid_skeleton.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -369,11 +370,8 @@ class _HomePageState extends State<HomePage> {
 
               // ─── Grille produits
               if (_loading)
-                const SliverFillRemaining(
-                  child: Center(
-                    child:
-                        CircularProgressIndicator(color: OrivaColors.gold),
-                  ),
+                const SliverToBoxAdapter(
+                  child: ProductGridSkeleton(),
                 )
               else if (_filteredProducts.isEmpty)
                 SliverFillRemaining(

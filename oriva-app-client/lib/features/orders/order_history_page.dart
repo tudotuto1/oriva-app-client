@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'order_history_models.dart';
 import 'order_history_providers.dart';
+import 'widgets/order_list_skeleton.dart';
 
 class OrderHistoryPage extends ConsumerWidget {
   const OrderHistoryPage({super.key});
@@ -21,9 +22,7 @@ class OrderHistoryPage extends ConsumerWidget {
         iconTheme: const IconThemeData(color: Color(0xFFC9A96E)),
       ),
       body: asyncOrders.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: Color(0xFFC9A96E)),
-        ),
+        loading: () => const OrderListSkeleton(),
         error: (e, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -45,18 +44,41 @@ class OrderHistoryPage extends ConsumerWidget {
         ),
         data: (orders) {
           if (orders.isEmpty) {
-            return const Center(
-              child: Text(
-                'Aucune commande pour le moment.',
-                style: TextStyle(color: Color(0xFF888888)),
+            return RefreshIndicator(
+              color: const Color(0xFFC9A96E),
+              backgroundColor: const Color(0xFF111111),
+              onRefresh: () async {
+                ref.invalidate(orderHistoryProvider);
+                await ref.read(orderHistoryProvider.future);
+              },
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 200),
+                  Center(
+                    child: Text(
+                      'Aucune commande pour le moment.',
+                      style: TextStyle(color: Color(0xFF888888)),
+                    ),
+                  ),
+                ],
               ),
             );
           }
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: orders.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (_, i) => _OrderCard(order: orders[i]),
+          return RefreshIndicator(
+            color: const Color(0xFFC9A96E),
+            backgroundColor: const Color(0xFF111111),
+            onRefresh: () async {
+              ref.invalidate(orderHistoryProvider);
+              await ref.read(orderHistoryProvider.future);
+            },
+            child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              itemCount: orders.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, i) => _OrderCard(order: orders[i]),
+            ),
           );
         },
       ),

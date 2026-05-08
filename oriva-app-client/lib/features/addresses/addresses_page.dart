@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'address_models.dart';
 import 'address_providers.dart';
+import '../orders/widgets/order_list_skeleton.dart';
 
 class AddressesPage extends ConsumerWidget {
   const AddressesPage({super.key});
@@ -28,9 +29,7 @@ class AddressesPage extends ConsumerWidget {
         child: const Icon(Icons.add, color: Color(0xFF080808)),
       ),
       body: asyncAddrs.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: Color(0xFFC9A96E)),
-        ),
+        loading: () => const OrderListSkeleton(itemCount: 3),
         error: (e, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -43,22 +42,42 @@ class AddressesPage extends ConsumerWidget {
         ),
         data: (list) {
           if (list.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Text(
-                  'Aucune adresse enregistrée.\nAjoutez-en une pour commander.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Color(0xFF888888), fontSize: 14),
-                ),
+            return RefreshIndicator(
+              color: const Color(0xFFC9A96E),
+              backgroundColor: const Color(0xFF111111),
+              onRefresh: () async {
+                ref.invalidate(myAddressesProvider);
+                await ref.read(myAddressesProvider.future);
+              },
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 200),
+                  Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Text(
+                      'Aucune adresse enregistrée.\nAjoutez-en une pour commander.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Color(0xFF888888), fontSize: 14),
+                    ),
+                  ),
+                ],
               ),
             );
           }
-          return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-            itemCount: list.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (_, i) => _AddressCard(
+          return RefreshIndicator(
+            color: const Color(0xFFC9A96E),
+            backgroundColor: const Color(0xFF111111),
+            onRefresh: () async {
+              ref.invalidate(myAddressesProvider);
+              await ref.read(myAddressesProvider.future);
+            },
+            child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+              itemCount: list.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, i) => _AddressCard(
               address: list[i],
               onTap: () => context.push('/address/edit/${list[i].id}'),
               onSetDefault: () async {
@@ -118,6 +137,7 @@ class AddressesPage extends ConsumerWidget {
                 }
               },
             ),
+          ),
           );
         },
       ),

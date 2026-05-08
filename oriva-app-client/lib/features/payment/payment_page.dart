@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../../core/widgets/animated_success.dart';
 import 'payment_models.dart';
 import 'payment_providers.dart';
 import 'widgets/phone_input.dart';
@@ -220,11 +221,13 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            isSuccess ? LucideIcons.circleCheck : LucideIcons.circleX,
-            color: isSuccess ? const Color(0xFFC9A96E) : Colors.redAccent,
-            size: 64,
-          ),
+          isSuccess
+              ? const AnimatedSuccessCheck(size: 64)
+              : const Icon(
+                  LucideIcons.circleX,
+                  color: Colors.redAccent,
+                  size: 64,
+                ),
           const SizedBox(height: 24),
           Text(
             _statusLabel(s.status),
