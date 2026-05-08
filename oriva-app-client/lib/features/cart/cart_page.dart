@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -351,6 +352,7 @@ class _CheckoutPanel extends ConsumerWidget {
               onPressed: isLoading
                   ? null
                   : () {
+                      HapticFeedback.mediumImpact();
                       ref.read(createOrderControllerProvider.notifier).submit();
                     },
               style: ElevatedButton.styleFrom(

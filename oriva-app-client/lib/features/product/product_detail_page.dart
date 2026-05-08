@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -22,13 +23,20 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   Map<String, dynamic>? _product;
   Map<String, dynamic>? _vendor;
   bool _loading = true;
-  int _currentImage = 0;
+  final ValueNotifier<int> _currentImageIndex = ValueNotifier<int>(0);
   final _pageController = PageController();
 
   @override
   void initState() {
     super.initState();
     _loadProduct();
+  }
+
+  @override
+  void dispose() {
+    _currentImageIndex.dispose();
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadProduct() async {
@@ -113,36 +121,52 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                         PageView.builder(
                           controller: _pageController,
                           onPageChanged: (i) =>
-                              setState(() => _currentImage = i),
+                              _currentImageIndex.value = i,
                           itemCount: images.length,
-                          itemBuilder: (_, i) => CachedNetworkImage(
-                            imageUrl: images[i],
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                          ),
+                          itemBuilder: (_, i) {
+                            final image = CachedNetworkImage(
+                              imageUrl: images[i],
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            );
+                            if (i == 0) {
+                              return Hero(
+                                tag:
+                                    'product-image-${_product!['id']}',
+                                child: image,
+                              );
+                            }
+                            return image;
+                          },
                         ),
                         if (images.length > 1)
                           Positioned(
                             bottom: 24,
                             left: 0,
                             right: 0,
-                            child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.center,
-                              children: List.generate(
-                                images.length,
-                                (i) => Container(
-                                  margin: const EdgeInsets.symmetric(
-                                      horizontal: 4),
-                                  width: i == _currentImage ? 20 : 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: i == _currentImage
-                                        ? OrivaColors.gold
-                                        : OrivaColors.cream
-                                            .withValues(alpha: 0.4),
-                                    borderRadius:
-                                        BorderRadius.circular(3),
+                            child: ValueListenableBuilder<int>(
+                              valueListenable: _currentImageIndex,
+                              builder: (context, current, _) => Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                children: List.generate(
+                                  images.length,
+                                  (i) => AnimatedContainer(
+                                    duration: const Duration(
+                                        milliseconds: 220),
+                                    curve: Curves.easeOutCubic,
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 4),
+                                    width: i == current ? 20 : 6,
+                                    height: 6,
+                                    decoration: BoxDecoration(
+                                      color: i == current
+                                          ? OrivaColors.gold
+                                          : OrivaColors.cream
+                                              .withValues(alpha: 0.4),
+                                      borderRadius:
+                                          BorderRadius.circular(3),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -255,6 +279,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
             onPressed: outOfStock
                 ? null
                 : () {
+                    HapticFeedback.lightImpact();
                     final images =
                         List<String>.from(_product!['images'] ?? []);
                     ref.read(cartProvider.notifier).addItem(
