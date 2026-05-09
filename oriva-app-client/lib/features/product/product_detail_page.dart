@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/supabase/supabase_service.dart';
 import '../cart/cart_provider.dart';
+import '../wishlist/widgets/wishlist_heart_button.dart';
 
 class ProductDetailPage extends ConsumerStatefulWidget {
   final String productId;
@@ -105,6 +106,15 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                 ),
               ),
             ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: WishlistHeartButton(
+                  productId: _product!['id'].toString(),
+                  size: 26,
+                ),
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: images.isEmpty
                   ? Container(color: OrivaColors.surface)

@@ -7,6 +7,7 @@ import '../../features/auth/signup_page.dart';
 import '../../features/home/home_shell.dart';
 import '../../features/orders/order_confirmation_page.dart';
 import '../../features/product/product_detail_page.dart';
+import '../../features/wishlist/wishlist_page.dart';
 import '../supabase/supabase_service.dart';
 
 final appRouter = GoRouter(
@@ -39,6 +40,10 @@ final appRouter = GoRouter(
       builder: (context, state) => OrderConfirmationPage(
         orderId: state.pathParameters['id']!,
       ),
+    ),
+    GoRoute(
+      path: '/wishlist',
+      builder: (context, state) => const WishlistPage(),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(
