@@ -12,6 +12,7 @@ import '../../features/product/product_detail_page.dart';
 import '../../features/profile/edit_profile_page.dart';
 import '../../features/addresses/addresses_page.dart';
 import '../../features/addresses/address_form_page.dart';
+import '../../features/wishlist/wishlist_page.dart';
 import '../supabase/supabase_service.dart';
 import 'page_transitions.dart';
 
@@ -99,6 +100,13 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => orivaPageTransition(
         key: state.pageKey,
         child: AddressFormPage(addressId: state.pathParameters['id']),
+      ),
+    ),
+    GoRoute(
+      path: '/wishlist',
+      pageBuilder: (context, state) => orivaPageTransition(
+        key: state.pageKey,
+        child: const WishlistPage(),
       ),
     ),
   ],

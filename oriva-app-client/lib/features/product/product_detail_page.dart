@@ -10,6 +10,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/supabase/supabase_service.dart';
 import '../cart/cart_provider.dart';
 import '../home/home_shell.dart';
+import '../wishlist/widgets/wishlist_heart_button.dart';
 import 'widgets/image_zoom_page.dart';
 
 class ProductDetailPage extends ConsumerStatefulWidget {
@@ -115,6 +116,15 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                 ),
               ),
             ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: WishlistHeartButton(
+                  productId: _product!['id'].toString(),
+                  size: 26,
+                ),
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: images.isEmpty
                   ? Container(color: OrivaColors.surface)

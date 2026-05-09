@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/animated_success.dart';
+import '../../core/widgets/oriva_confetti.dart';
 
 class OrderConfirmationPage extends StatelessWidget {
   final String orderId;
@@ -16,70 +17,75 @@ class OrderConfirmationPage extends StatelessWidget {
         : orderId.toUpperCase();
 
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Center(child: AnimatedSuccessCheck(size: 96)),
-              const SizedBox(height: 32),
-              Text(
-                'Commande passée',
-                style: OrivaTypography.display(
-                    size: 32, weight: FontWeight.w500),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Votre commande est en attente de paiement.\nLe paiement sera bientôt disponible.',
-                style: OrivaTypography.body(
-                    size: 14, color: OrivaColors.muted),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 16),
-                decoration: BoxDecoration(
-                  color: OrivaColors.card,
-                  border: Border.all(color: OrivaColors.border),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    Text('Numéro de commande',
-                        style: OrivaTypography.label()),
-                    const SizedBox(height: 6),
-                    Text(
-                      '#$shortId',
-                      style: OrivaTypography.body(
-                        size: 18,
-                        weight: FontWeight.w700,
-                        color: OrivaColors.gold,
-                      ),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Center(child: AnimatedSuccessCheck(size: 96)),
+                  const SizedBox(height: 32),
+                  Text(
+                    'Commande passée',
+                    style: OrivaTypography.display(
+                        size: 32, weight: FontWeight.w500),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Votre commande est en attente de paiement.\nLe paiement sera bientôt disponible.',
+                    style: OrivaTypography.body(
+                        size: 14, color: OrivaColors.muted),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: OrivaColors.card,
+                      border: Border.all(color: OrivaColors.border),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ],
-                ),
+                    child: Column(
+                      children: [
+                        Text('Numéro de commande',
+                            style: OrivaTypography.label()),
+                        const SizedBox(height: 6),
+                        Text(
+                          '#$shortId',
+                          style: OrivaTypography.body(
+                            size: 18,
+                            weight: FontWeight.w700,
+                            color: OrivaColors.gold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  ElevatedButton(
+                    onPressed: () => context.go('/home'),
+                    child: const Text('Continuer mes achats'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () => context.go('/home'),
+                    child: Text(
+                      'Retour à l\'accueil',
+                      style: OrivaTypography.body(
+                          size: 14, color: OrivaColors.muted),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: () => context.go('/home'),
-                child: const Text('Continuer mes achats'),
-              ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: () => context.go('/home'),
-                child: Text(
-                  'Retour à l\'accueil',
-                  style: OrivaTypography.body(
-                      size: 14, color: OrivaColors.muted),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          const Positioned.fill(child: OrivaConfetti()),
+        ],
       ),
     );
   }
