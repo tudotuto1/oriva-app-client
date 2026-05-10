@@ -12,6 +12,8 @@ import '../orders/order_models.dart';
 import '../orders/order_providers.dart';
 import '../orders/order_repository.dart';
 import 'cart_provider.dart';
+import 'checkout_address_provider.dart';
+import 'widgets/checkout_address_selector.dart';
 
 class CartPage extends ConsumerWidget {
   const CartPage({super.key});
@@ -438,6 +440,16 @@ class _CheckoutPanelState extends ConsumerState<_CheckoutPanel> {
             ),
           ],
 
+          const SizedBox(height: 20),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'LIVRAISON',
+              style: OrivaTypography.label(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const CheckoutAddressSelector(),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
@@ -445,8 +457,26 @@ class _CheckoutPanelState extends ConsumerState<_CheckoutPanel> {
               onPressed: (isLoading || belowMinimum)
                   ? null
                   : () {
+                      final addressId =
+                          ref.read(selectedCheckoutAddressIdProvider);
+                      if (addressId == null) {
+                        HapticFeedback.heavyImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Choisis une adresse de livraison.',
+                              style: OrivaTypography.body(
+                                  color: OrivaColors.cream),
+                            ),
+                            backgroundColor: OrivaColors.danger,
+                          ),
+                        );
+                        return;
+                      }
                       HapticFeedback.mediumImpact();
-                      ref.read(createOrderControllerProvider.notifier).submit();
+                      ref
+                          .read(createOrderControllerProvider.notifier)
+                          .submit(addressId: addressId);
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: OrivaColors.gold,

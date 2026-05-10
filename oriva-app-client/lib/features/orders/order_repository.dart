@@ -28,7 +28,10 @@ class OrderRepository {
   OrderRepository({SupabaseClient? client})
       : _client = client ?? SupabaseService.client;
 
-  Future<CreateOrderResult> createOrder(List<CartItem> items) async {
+  Future<CreateOrderResult> createOrder({
+    required List<CartItem> items,
+    required String addressId,
+  }) async {
     if (items.isEmpty) {
       throw const CreateOrderException(
         code: 'EMPTY_CART',
@@ -43,7 +46,10 @@ class OrderRepository {
     try {
       final response = await _client.rpc(
         'create_order',
-        params: {'p_items': payload},
+        params: {
+          'p_items': payload,
+          'p_address_id': addressId,
+        },
       );
 
       if (response == null) {
@@ -95,6 +101,25 @@ class OrderRepository {
         return const CreateOrderException(
           code: 'EMPTY_CART',
           userMessage: 'Votre panier est vide.',
+        );
+      case 'ADDRESS_REQUIRED':
+        return const CreateOrderException(
+          code: 'ADDRESS_REQUIRED',
+          userMessage:
+              'Choisis une adresse de livraison avant de commander.',
+        );
+      case 'ADDRESS_NOT_FOUND':
+        return const CreateOrderException(
+          code: 'ADDRESS_NOT_FOUND',
+          userMessage:
+              'Cette adresse n\'existe plus. Choisis-en une autre.',
+        );
+      case 'MISSING_SHIPPING_ADDRESS':
+        return CreateOrderException(
+          code: 'MISSING_SHIPPING_ADDRESS',
+          extra: parts.isNotEmpty ? parts[0].trim() : null,
+          userMessage:
+              'Cette commande n\'a pas d\'adresse de livraison. Recommence le checkout.',
         );
       case 'INVALID_QUANTITY':
         return CreateOrderException(
