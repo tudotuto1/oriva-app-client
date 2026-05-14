@@ -13,6 +13,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/supabase/supabase_service.dart';
 import '../categories/category_providers.dart';
 import '../categories/widgets/category_chips.dart';
+import '../recently_viewed/widgets/recently_viewed_carousel.dart';
 import 'search_providers.dart';
 import 'widgets/product_grid_skeleton.dart';
 
@@ -339,6 +340,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
                 ),
               ],
+
+              // ─── Vu récemment
+              const SliverToBoxAdapter(
+                child: RecentlyViewedCarousel(),
+              ),
 
               // ─── Catégories chips
               const SliverToBoxAdapter(child: SizedBox(height: 8)),

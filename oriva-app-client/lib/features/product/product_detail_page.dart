@@ -10,6 +10,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/supabase/supabase_service.dart';
 import '../cart/cart_provider.dart';
 import '../home/home_shell.dart';
+import '../recently_viewed/recently_viewed_provider.dart';
 import '../wishlist/widgets/wishlist_heart_button.dart';
 import 'widgets/image_zoom_page.dart';
 
@@ -33,6 +34,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   void initState() {
     super.initState();
     _loadProduct();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(recentlyViewedProvider.notifier).add(widget.productId);
+    });
   }
 
   @override
