@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -7,15 +8,16 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/supabase/supabase_service.dart';
+import '../recently_viewed/widgets/recently_viewed_carousel.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   final _searchController = TextEditingController();
   List<Map<String, dynamic>> _allProducts = [];
   List<Map<String, dynamic>> _filteredProducts = [];
@@ -304,6 +306,11 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ],
+
+              // ─── Vu récemment
+              const SliverToBoxAdapter(
+                child: RecentlyViewedCarousel(),
+              ),
 
               // ─── Barre de recherche
               SliverToBoxAdapter(

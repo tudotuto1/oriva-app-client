@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/supabase/supabase_service.dart';
 import '../cart/cart_provider.dart';
+import '../recently_viewed/recently_viewed_provider.dart';
 
 class ProductDetailPage extends ConsumerStatefulWidget {
   final String productId;
@@ -29,6 +30,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   void initState() {
     super.initState();
     _loadProduct();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(recentlyViewedProvider.notifier).add(widget.productId);
+    });
   }
 
   Future<void> _loadProduct() async {
