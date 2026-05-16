@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -26,29 +28,43 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final currentIndex = ref.watch(homeTabIndexProvider);
 
     return Scaffold(
+      extendBody: true,
       body: IndexedStack(index: currentIndex, children: _pages),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: OrivaColors.border)),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: currentIndex,
-          onTap: (i) =>
-              ref.read(homeTabIndexProvider.notifier).state = i,
-          items: [
-            const BottomNavigationBarItem(
-              icon: Icon(LucideIcons.house),
-              label: 'Accueil',
+      bottomNavigationBar: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            decoration: BoxDecoration(
+              color: OrivaColors.black.withValues(alpha: 0.65),
+              border: Border(
+                top: BorderSide(
+                  color: OrivaColors.gold.withValues(alpha: 0.15),
+                  width: 0.5,
+                ),
+              ),
             ),
-            BottomNavigationBarItem(
-              icon: _AnimatedCartIcon(count: cartCount),
-              label: 'Panier',
+            child: BottomNavigationBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              currentIndex: currentIndex,
+              onTap: (i) =>
+                  ref.read(homeTabIndexProvider.notifier).state = i,
+              items: [
+                const BottomNavigationBarItem(
+                  icon: Icon(LucideIcons.house),
+                  label: 'Accueil',
+                ),
+                BottomNavigationBarItem(
+                  icon: _AnimatedCartIcon(count: cartCount),
+                  label: 'Panier',
+                ),
+                const BottomNavigationBarItem(
+                  icon: Icon(LucideIcons.user),
+                  label: 'Profil',
+                ),
+              ],
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(LucideIcons.user),
-              label: 'Profil',
-            ),
-          ],
+          ),
         ),
       ),
     );
