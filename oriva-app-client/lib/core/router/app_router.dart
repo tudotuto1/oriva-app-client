@@ -9,6 +9,7 @@ import '../../features/orders/order_confirmation_page.dart';
 import '../../features/orders/order_history_page.dart';
 import '../../features/payment/payment_page.dart';
 import '../../features/product/product_detail_page.dart';
+import '../../features/reviews/reviews_page.dart';
 import '../../features/profile/edit_profile_page.dart';
 import '../../features/addresses/addresses_page.dart';
 import '../../features/addresses/address_form_page.dart';
@@ -43,6 +44,11 @@ final appRouter = GoRouter(
         key: state.pageKey,
         child: ProductDetailPage(productId: state.pathParameters['id']!),
       ),
+    ),
+    GoRoute(
+      path: '/reviews/:productId',
+      builder: (context, state) =>
+          ReviewsPage(productId: state.pathParameters['productId']!),
     ),
     GoRoute(
       path: '/order-confirmation/:id',

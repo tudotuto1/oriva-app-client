@@ -12,6 +12,7 @@ import '../cart/cart_provider.dart';
 import '../home/home_shell.dart';
 import '../recently_viewed/recently_viewed_provider.dart';
 import '../wishlist/widgets/wishlist_heart_button.dart';
+import '../reviews/widgets/product_rating_summary.dart';
 import 'widgets/share_product_button.dart';
 import 'widgets/image_zoom_page.dart';
 
@@ -301,6 +302,11 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  ProductRatingSummary(
+                    productId: _product!['id'].toString(),
                   ),
                   const SizedBox(height: 32),
 
