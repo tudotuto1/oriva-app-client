@@ -12,6 +12,7 @@ import '../cart/cart_provider.dart';
 import '../home/home_shell.dart';
 import '../recently_viewed/recently_viewed_provider.dart';
 import '../wishlist/widgets/wishlist_heart_button.dart';
+import 'widgets/share_product_button.dart';
 import 'widgets/image_zoom_page.dart';
 
 class ProductDetailPage extends ConsumerStatefulWidget {
@@ -121,6 +122,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
               ),
             ),
             actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: ShareProductButton(
+                  product: _product!,
+                  vendorName: _vendor?['display_name']?.toString(),
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: WishlistHeartButton(
