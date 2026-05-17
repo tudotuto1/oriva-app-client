@@ -41,3 +41,18 @@ final createOrderControllerProvider =
     AsyncNotifierProvider<CreateOrderController, CreateOrderResult?>(
   CreateOrderController.new,
 );
+
+final myOrdersStreamProvider =
+    StreamProvider.autoDispose<List<Order>>((ref) {
+  return ref.read(orderRepositoryProvider).watchMyOrders();
+});
+
+final orderStreamProvider =
+    StreamProvider.autoDispose.family<Order?, String>((ref, orderId) {
+  return ref.read(orderRepositoryProvider).watchOrderById(orderId);
+});
+
+final orderItemsProvider =
+    FutureProvider.autoDispose.family<List<OrderItem>, String>((ref, orderId) {
+  return ref.read(orderRepositoryProvider).getOrderItems(orderId);
+});

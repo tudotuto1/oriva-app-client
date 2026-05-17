@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/supabase/supabase_service.dart';
@@ -16,6 +17,9 @@ Future<void> main() async {
   } catch (_) {
     // En production Web, les vars viennent de --dart-define
   }
+
+  // Initialise les données de locale pour le formatage des dates (fr_FR)
+  await initializeDateFormatting('fr_FR', null);
 
   // Initialise Supabase
   await SupabaseService.init();

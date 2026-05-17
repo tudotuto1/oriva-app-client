@@ -127,4 +127,46 @@ class OrderRepository {
         );
     }
   }
+
+  /// Stream temps réel des commandes du buyer connecté.
+  /// Retourne immédiatement la liste actuelle puis pousse les updates.
+  Stream<List<Order>> watchMyOrders() {
+    final user = SupabaseService.currentUser;
+    if (user == null) {
+      return Stream.value(const []);
+    }
+    return _client
+        .from('orders')
+        .stream(primaryKey: ['id'])
+        .eq('buyer_id', user.id)
+        .order('created_at', ascending: false)
+        .map((rows) => rows
+            .map((m) => Order.fromJson(Map<String, dynamic>.from(m)))
+            .toList());
+  }
+
+  /// Stream temps réel d'UNE commande (pour suivre les changements
+  /// de statut côté détail).
+  Stream<Order?> watchOrderById(String orderId) {
+    return _client
+        .from('orders')
+        .stream(primaryKey: ['id'])
+        .eq('id', orderId)
+        .map((rows) {
+      if (rows.isEmpty) return null;
+      return Order.fromJson(Map<String, dynamic>.from(rows.first));
+    });
+  }
+
+  /// Items d'une commande (snapshot - ne changent pas, donc Future suffit).
+  Future<List<OrderItem>> getOrderItems(String orderId) async {
+    final data = await _client
+        .from('order_items')
+        .select()
+        .eq('order_id', orderId)
+        .order('created_at', ascending: true);
+    return (data as List)
+        .map((m) => OrderItem.fromJson(Map<String, dynamic>.from(m)))
+        .toList();
+  }
 }
