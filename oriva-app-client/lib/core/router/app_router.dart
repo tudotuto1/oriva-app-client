@@ -14,6 +14,7 @@ import '../../features/profile/edit_profile_page.dart';
 import '../../features/addresses/addresses_page.dart';
 import '../../features/addresses/address_form_page.dart';
 import '../../features/wishlist/wishlist_page.dart';
+import '../../features/notifications/notifications_page.dart';
 import '../supabase/supabase_service.dart';
 import 'page_transitions.dart';
 
@@ -114,6 +115,10 @@ final appRouter = GoRouter(
         key: state.pageKey,
         child: const WishlistPage(),
       ),
+    ),
+    GoRoute(
+      path: '/notifications',
+      builder: (context, state) => const NotificationsPage(),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(

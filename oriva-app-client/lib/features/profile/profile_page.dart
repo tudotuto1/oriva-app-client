@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/supabase/supabase_service.dart';
+import '../notifications/notification_providers.dart';
+import '../notifications/widgets/notification_badge.dart';
 
-class ProfilePage extends StatefulWidget {
+class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  ConsumerState<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends ConsumerState<ProfilePage> {
   Map<String, dynamic>? _profile;
 
   @override
@@ -88,7 +91,12 @@ class _ProfilePageState extends State<ProfilePage> {
               () => context.push('/edit-profile')),
           _buildMenuItem(LucideIcons.mapPin, 'Adresses de livraison',
               () => context.push('/addresses')),
-          _buildMenuItem(LucideIcons.bell, 'Notifications', () {}),
+          _buildMenuItemWithBadge(
+            LucideIcons.bell,
+            'Notifications',
+            ref.watch(unreadNotificationCountProvider),
+            () => context.push('/notifications'),
+          ),
           _buildMenuItem(LucideIcons.info, 'Aide & support', () {}),
 
           const SizedBox(height: 24),
@@ -121,6 +129,34 @@ class _ProfilePageState extends State<ProfilePage> {
         leading: Icon(icon, color: OrivaColors.gold, size: 20),
         title: Text(label, style: OrivaTypography.body(size: 15)),
         trailing: const Icon(LucideIcons.chevronRight, color: OrivaColors.muted, size: 18),
+      ),
+    );
+  }
+
+  Widget _buildMenuItemWithBadge(
+      IconData icon, String label, int badgeCount, VoidCallback onTap) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: OrivaColors.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: OrivaColors.border),
+      ),
+      child: ListTile(
+        onTap: onTap,
+        leading: Icon(icon, color: OrivaColors.gold, size: 20),
+        title: Text(label, style: OrivaTypography.body(size: 15)),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (badgeCount > 0) ...[
+              NotificationCountBadge(count: badgeCount),
+              const SizedBox(width: 8),
+            ],
+            const Icon(LucideIcons.chevronRight,
+                color: OrivaColors.muted, size: 18),
+          ],
+        ),
       ),
     );
   }
