@@ -18,7 +18,12 @@ import 'widgets/image_zoom_page.dart';
 
 class ProductDetailPage extends ConsumerStatefulWidget {
   final String productId;
-  const ProductDetailPage({super.key, required this.productId});
+  final String? heroTag;
+  const ProductDetailPage({
+    super.key,
+    required this.productId,
+    this.heroTag,
+  });
 
   @override
   ConsumerState<ProductDetailPage> createState() =>
@@ -154,10 +159,11 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                               fit: BoxFit.cover,
                               width: double.infinity,
                             );
+                            final activeTag = widget.heroTag ??
+                                'product-image-${_product!['id']}';
                             final wrapped = i == 0
                                 ? Hero(
-                                    tag:
-                                        'product-image-${_product!['id']}',
+                                    tag: activeTag,
                                     child: image,
                                   )
                                 : image;

@@ -251,8 +251,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                           final images =
                               List<String>.from(product['images'] ?? []);
                           return GestureDetector(
-                            onTap: () =>
-                                context.push('/product/${product['id']}'),
+                            onTap: () => context.push(
+                              '/product/${product['id']}',
+                              extra: 'product-carousel-${product['id']}',
+                            ),
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
@@ -266,7 +268,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   children: [
                                     Hero(
                                       tag:
-                                          'product-image-carousel-${product['id']}',
+                                          'product-carousel-${product['id']}',
                                       child: CachedNetworkImage(
                                         imageUrl: images[0],
                                         fit: BoxFit.cover,
@@ -502,7 +504,10 @@ class _ProductCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         HapticFeedback.selectionClick();
-        context.push('/product/${product['id']}');
+        context.push(
+          '/product/${product['id']}',
+          extra: 'product-grid-${product['id']}',
+        );
       },
       child: Container(
         decoration: BoxDecoration(
@@ -521,7 +526,7 @@ class _ProductCard extends StatelessWidget {
                     const BorderRadius.vertical(top: Radius.circular(16)),
                 child: firstImage != null
                     ? Hero(
-                        tag: 'product-image-${product['id']}',
+                        tag: 'product-grid-${product['id']}',
                         child: CachedNetworkImage(
                           imageUrl: firstImage,
                           fit: BoxFit.cover,

@@ -41,10 +41,16 @@ final appRouter = GoRouter(
     GoRoute(path: '/home', builder: (context, state) => const HomeShell()),
     GoRoute(
       path: '/product/:id',
-      pageBuilder: (context, state) => orivaPageTransition(
-        key: state.pageKey,
-        child: ProductDetailPage(productId: state.pathParameters['id']!),
-      ),
+      pageBuilder: (context, state) {
+        final extra = state.extra;
+        return orivaPageTransition(
+          key: state.pageKey,
+          child: ProductDetailPage(
+            productId: state.pathParameters['id']!,
+            heroTag: extra is String ? extra : null,
+          ),
+        );
+      },
     ),
     GoRoute(
       path: '/reviews/:productId',

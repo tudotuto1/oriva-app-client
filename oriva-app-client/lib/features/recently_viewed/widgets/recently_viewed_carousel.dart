@@ -53,7 +53,10 @@ class RecentlyViewedCarousel extends ConsumerWidget {
                   final price = (p['display_price'] as num?)?.toInt() ?? 0;
 
                   return GestureDetector(
-                    onTap: () => context.push('/product/${p['id']}'),
+                    onTap: () => context.push(
+                      '/product/${p['id']}',
+                      extra: 'product-recent-${p['id']}',
+                    ),
                     child: Container(
                       width: 140,
                       decoration: BoxDecoration(
@@ -71,17 +74,20 @@ class RecentlyViewedCarousel extends ConsumerWidget {
                             AspectRatio(
                               aspectRatio: 1,
                               child: image != null
-                                  ? CachedNetworkImage(
-                                      imageUrl: image,
-                                      fit: BoxFit.cover,
-                                      placeholder: (_, __) => Container(
-                                        color: OrivaColors.surface,
-                                      ),
-                                      errorWidget: (_, __, ___) => Container(
-                                        color: OrivaColors.surface,
-                                        child: const Icon(
-                                            Icons.image_not_supported_outlined,
-                                            color: OrivaColors.muted),
+                                  ? Hero(
+                                      tag: 'product-recent-${p['id']}',
+                                      child: CachedNetworkImage(
+                                        imageUrl: image,
+                                        fit: BoxFit.cover,
+                                        placeholder: (_, __) => Container(
+                                          color: OrivaColors.surface,
+                                        ),
+                                        errorWidget: (_, __, ___) => Container(
+                                          color: OrivaColors.surface,
+                                          child: const Icon(
+                                              Icons.image_not_supported_outlined,
+                                              color: OrivaColors.muted),
+                                        ),
                                       ),
                                     )
                                   : Container(color: OrivaColors.surface),
