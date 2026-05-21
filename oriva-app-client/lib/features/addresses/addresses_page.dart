@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/widgets/oriva_error_state.dart';
 import 'address_models.dart';
 import 'address_providers.dart';
 import '../orders/widgets/order_list_skeleton.dart';
@@ -30,15 +31,11 @@ class AddressesPage extends ConsumerWidget {
       ),
       body: asyncAddrs.when(
         loading: () => const OrderListSkeleton(itemCount: 3),
-        error: (e, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(
-              'Erreur : $e',
-              style: const TextStyle(color: Color(0xFFF5F0E8)),
-              textAlign: TextAlign.center,
-            ),
-          ),
+        error: (e, _) => OrivaErrorState(
+          message: 'Impossible de charger vos adresses.',
+          onRetry: () {
+            ref.invalidate(myAddressesProvider);
+          },
         ),
         data: (list) {
           if (list.isEmpty) {

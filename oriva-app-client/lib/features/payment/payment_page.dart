@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/widgets/animated_success.dart';
+import '../../core/widgets/oriva_error_state.dart';
 import 'payment_models.dart';
 import 'payment_providers.dart';
 import 'widgets/phone_input.dart';
@@ -285,15 +286,14 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
   }
 
   Widget _buildError(String msg) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(
-          'Erreur : $msg',
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Color(0xFFF5F0E8)),
-        ),
-      ),
+    return OrivaErrorState(
+      message: 'Une erreur de paiement est survenue.',
+      hint: 'Réessayez ou contactez le support si le problème persiste.',
+      onRetry: () {
+        ref
+            .read(paymentSessionProvider(widget.orderId).notifier)
+            .reset();
+      },
     );
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/widgets/oriva_error_state.dart';
 import 'wishlist_providers.dart';
 import 'widgets/wishlist_heart_button.dart';
 
@@ -26,15 +27,11 @@ class WishlistPage extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(color: Color(0xFFC9A96E)),
         ),
-        error: (e, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(
-              'Erreur : $e',
-              style: const TextStyle(color: Color(0xFFF5F0E8)),
-              textAlign: TextAlign.center,
-            ),
-          ),
+        error: (e, _) => OrivaErrorState(
+          message: 'Impossible de charger vos favoris.',
+          onRetry: () {
+            ref.invalidate(wishlistItemsProvider);
+          },
         ),
         data: (items) {
           if (items.isEmpty) {

@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/oriva_error_state.dart';
 import 'review_models.dart';
 import 'review_providers.dart';
 import 'review_repository.dart';
@@ -99,9 +100,12 @@ class ReviewsPage extends ConsumerWidget {
               )),
               error: (e, _) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Text(
-                  'Erreur de chargement : $e',
-                  style: OrivaTypography.body(color: OrivaColors.danger),
+                child: OrivaErrorState(
+                  message: 'Impossible de charger les avis.',
+                  onRetry: () {
+                    ref.invalidate(productReviewsProvider(productId));
+                    ref.invalidate(reviewStatsProvider(productId));
+                  },
                 ),
               ),
               data: (reviews) {

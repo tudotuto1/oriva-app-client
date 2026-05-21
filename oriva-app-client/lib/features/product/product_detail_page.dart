@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/supabase/supabase_service.dart';
+import '../../core/widgets/oriva_error_state.dart';
 import '../cart/cart_provider.dart';
 import '../home/home_shell.dart';
 import '../recently_viewed/recently_viewed_provider.dart';
@@ -98,8 +99,21 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
 
     if (_product == null) {
       return Scaffold(
-        appBar: AppBar(),
-        body: const Center(child: Text('Produit introuvable')),
+        backgroundColor: OrivaColors.black,
+        appBar: AppBar(
+          backgroundColor: OrivaColors.black,
+          leading: IconButton(
+            icon: const Icon(LucideIcons.arrowLeft,
+                color: OrivaColors.cream),
+            onPressed: () => context.pop(),
+          ),
+        ),
+        body: OrivaErrorState(
+          icon: LucideIcons.packageX,
+          message: 'Ce produit est indisponible.',
+          hint: 'Il a peut-être été retiré ou archivé.',
+          onRetry: _loadProduct,
+        ),
       );
     }
 

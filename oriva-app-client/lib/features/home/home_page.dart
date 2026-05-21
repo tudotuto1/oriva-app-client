@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/supabase/supabase_service.dart';
+import '../../core/widgets/oriva_error_state.dart';
 import '../categories/category_providers.dart';
 import '../categories/widgets/category_chips.dart';
 import '../recently_viewed/widgets/recently_viewed_carousel.dart';
@@ -29,6 +30,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   Timer? _searchDebounce;
   List<Map<String, dynamic>> _allProducts = [];
   bool _loading = true;
+  bool _hasError = false;
   int _carouselIndex = 0;
 
   @override
@@ -57,7 +59,10 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> _loadProducts() async {
-    setState(() => _loading = true);
+    setState(() {
+      _loading = true;
+      _hasError = false;
+    });
     try {
       final response = await SupabaseService.client
           .from('products_with_pricing')
@@ -69,7 +74,10 @@ class _HomePageState extends ConsumerState<HomePage> {
         _loading = false;
       });
     } catch (e) {
-      setState(() => _loading = false);
+      setState(() {
+        _loading = false;
+        _hasError = true;
+      });
     }
   }
 
@@ -419,6 +427,14 @@ class _HomePageState extends ConsumerState<HomePage> {
               if (_loading)
                 const SliverToBoxAdapter(
                   child: ProductGridSkeleton(),
+                )
+              else if (_hasError)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: OrivaErrorState(
+                    message: 'Impossible de charger les produits.',
+                    onRetry: _loadProducts,
+                  ),
                 )
               else if (filtered.isEmpty)
                 SliverFillRemaining(
