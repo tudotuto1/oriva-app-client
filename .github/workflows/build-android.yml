@@ -30,10 +30,9 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Setup Flutter 3.41.7 stable
+      - name: Setup Flutter stable
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.41.7'
           channel: 'stable'
           cache: true
 
