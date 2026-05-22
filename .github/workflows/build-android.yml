@@ -42,6 +42,16 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Generate native Android platform if missing
+        run: |
+          if [ ! -d "android" ]; then
+            echo "android/ folder missing, generating with flutter create..."
+            flutter create --platforms=android --org=com.oriva .
+            echo "android/ folder generated."
+          else
+            echo "android/ folder already exists, skipping generation."
+          fi
+
       - name: Create .env file from secrets
         run: |
           echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
