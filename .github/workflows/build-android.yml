@@ -52,6 +52,9 @@ jobs:
             echo "android/ folder already exists, skipping generation."
           fi
 
+      - name: Generate launcher icons (Oriva shopping bag)
+        run: dart run flutter_launcher_icons
+
       - name: Create .env file from secrets
         run: |
           echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
