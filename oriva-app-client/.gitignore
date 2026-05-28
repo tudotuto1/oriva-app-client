@@ -1,0 +1,31 @@
+# ─── Signing / secrets (NEVER commit) ───────────────────────────────
+*.jks
+*.keystore
+key.properties
+android/key.properties
+keystore-base64.txt
+
+# ─── Flutter / Dart ─────────────────────────────────────────────────
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# ─── Environment ────────────────────────────────────────────────────
+.env
+
+# ─── Generated native platform (regenerated in CI via flutter create) ─
+android/
+ios/
+linux/
+macos/
+windows/
+
+# ─── IDE / OS ───────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.iml
+.DS_Store
