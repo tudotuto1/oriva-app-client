@@ -170,8 +170,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                       const Spacer(),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () => context.push('/wishlist'),
+                        icon: const Icon(LucideIcons.heart),
+                        tooltip: 'Favoris',
+                      ),
+                      IconButton(
+                        onPressed: () => context.push('/notifications'),
                         icon: const Icon(LucideIcons.bell),
+                        tooltip: 'Notifications',
                       ),
                     ],
                   ),
