@@ -27,6 +27,23 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final cartCount = ref.watch(cartCountProvider);
     final currentIndex = ref.watch(homeTabIndexProvider);
 
+    ref.listen<bool>(cartRestoredProvider, (prev, next) {
+      if (next == true) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Vous avez laissé des articles dans votre panier 🛍️'),
+              backgroundColor: OrivaColors.black,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          ref.read(cartRestoredProvider.notifier).state = false;
+        });
+      }
+    });
+
     return Scaffold(
       extendBody: true,
       body: IndexedStack(index: currentIndex, children: _pages),
