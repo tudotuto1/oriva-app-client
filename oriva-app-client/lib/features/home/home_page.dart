@@ -17,6 +17,8 @@ import '../categories/widgets/category_chips.dart';
 import '../recently_viewed/widgets/recently_viewed_carousel.dart';
 import 'search_providers.dart';
 import 'widgets/product_grid_skeleton.dart';
+import '../notifications/notification_providers.dart';
+import '../notifications/widgets/notification_badge.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -174,10 +176,27 @@ class _HomePageState extends ConsumerState<HomePage> {
                         icon: const Icon(LucideIcons.heart),
                         tooltip: 'Favoris',
                       ),
-                      IconButton(
-                        onPressed: () => context.push('/notifications'),
-                        icon: const Icon(LucideIcons.bell),
-                        tooltip: 'Notifications',
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          IconButton(
+                            onPressed: () => context.push('/notifications'),
+                            icon: const Icon(LucideIcons.bell),
+                            tooltip: 'Notifications',
+                          ),
+                          if (ref.watch(unreadNotificationCountProvider) > 0)
+                            Positioned(
+                              right: 4,
+                              top: 4,
+                              child: IgnorePointer(
+                                child: NotificationCountBadge(
+                                  count:
+                                      ref.watch(unreadNotificationCountProvider),
+                                  size: 16,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ],
                   ),
