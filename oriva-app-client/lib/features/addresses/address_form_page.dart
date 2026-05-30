@@ -148,7 +148,7 @@ class _AddressFormPageState extends ConsumerState<AddressFormPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _field('Libellé *', _label, hint: 'Maison, Bureau...'),
+                  _field('Type d\'adresse *', _label, hint: 'Ex : Maison, Bureau, Boutique...'),
                   _field('Nom du destinataire *', _recipient,
                       hint: 'Bachir Bondo'),
                   _phoneField(),
