@@ -12,9 +12,13 @@ on:
 
 jobs:
   build:
-    name: Build APK (release, debug-signed)
+    name: Build APK + AAB (release, signed)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
+    # Exposed at job level so steps can test for its presence in `if:` conditions.
+    env:
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
     defaults:
       run:
@@ -34,6 +38,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          flutter-version: '3.32.0'
           cache: true
 
       - name: Flutter doctor
@@ -52,16 +57,60 @@ jobs:
             echo "android/ folder already exists, skipping generation."
           fi
 
-      - name: Create .env file from secrets
+      - name: Decode upload keystore from secret
+        if: env.KEYSTORE_BASE64 != ''
         run: |
-          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
-          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/upload-keystore.jks
+          echo "Decoded keystore -> android/app/upload-keystore.jks"
+
+      - name: Create key.properties from secrets
+        if: env.KEYSTORE_BASE64 != ''
+        env:
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+        run: |
+          cat > android/key.properties <<EOF
+          storePassword=$STORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
+          echo "Wrote android/key.properties (keyAlias=$KEY_ALIAS)"
+
+      - name: Inject release signing config into build.gradle.kts
+        run: python3 tool/inject_signing.py
+
+      - name: Ensure INTERNET permission in AndroidManifest
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          if ! grep -q "android.permission.INTERNET" "$MANIFEST"; then
+            sed -i 's|\(<manifest[^>]*>\)|\1\n    <uses-permission android:name="android.permission.INTERNET"/>|' "$MANIFEST"
+            echo "INTERNET permission added."
+          else
+            echo "INTERNET permission already present."
+          fi
+          echo "=== AndroidManifest.xml ==="
+          cat "$MANIFEST"
+
+      - name: Generate launcher icons (Oriva shopping bag)
+        run: dart run flutter_launcher_icons
+
+      - name: Create .env file from secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          printf "SUPABASE_URL=%s\n" "$SUPABASE_URL" > .env
+          printf "SUPABASE_ANON_KEY=%s\n" "$SUPABASE_ANON_KEY" >> .env
+          echo ".env file created (values masked):"
+          sed 's/=.*/=***MASKED***/' .env
 
       - name: Build release APK
-        run: |
-          flutter build apk --release \
-            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
-            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+        run: flutter build apk --release
+
+      - name: Build release App Bundle (.aab for Play Store)
+        run: flutter build appbundle --release
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -70,5 +119,14 @@ jobs:
           path: oriva-app-client/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
 
-      - name: Show APK size
-        run: ls -lh build/app/outputs/flutter-apk/app-release.apk
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: oriva-android-aab-${{ github.sha }}
+          path: oriva-app-client/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      - name: Show APK and AAB sizes
+        run: |
+          ls -lh build/app/outputs/flutter-apk/app-release.apk
+          ls -lh build/app/outputs/bundle/release/app-release.aab
