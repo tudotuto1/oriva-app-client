@@ -15,12 +15,14 @@ import '../../features/addresses/addresses_page.dart';
 import '../../features/addresses/address_form_page.dart';
 import '../../features/wishlist/wishlist_page.dart';
 import '../../features/notifications/notifications_page.dart';
+import '../../features/splash/splash_screen.dart';
 import '../supabase/supabase_service.dart';
 import 'page_transitions.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/onboarding',
+  initialLocation: '/splash',
   redirect: (context, state) {
+    if (state.matchedLocation == '/splash') return null;
     final isAuth = SupabaseService.isAuthenticated;
     final onAuthPage = state.matchedLocation == '/login' ||
         state.matchedLocation == '/signup' ||
@@ -35,6 +37,7 @@ final appRouter = GoRouter(
     return null;
   },
   routes: [
+    GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
     GoRoute(path: '/onboarding', builder: (context, state) => const OnboardingPage()),
     GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
     GoRoute(path: '/signup', builder: (context, state) => const SignupPage()),
