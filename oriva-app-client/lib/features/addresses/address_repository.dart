@@ -29,6 +29,8 @@ class AddressRepository {
     String? district,
     String? streetDetails,
     String? landmark,
+    double? latitude,
+    double? longitude,
     bool isDefault = false,
   }) async {
     _validatePhone(phoneLocal8Digits);
@@ -59,6 +61,8 @@ class AddressRepository {
           'district': district?.trim(),
           'street_details': streetDetails?.trim(),
           'landmark': landmark?.trim(),
+          'latitude': latitude,
+          'longitude': longitude,
           'is_default': isDefault,
         })
         .select()
@@ -81,6 +85,8 @@ class AddressRepository {
     String? district,
     String? streetDetails,
     String? landmark,
+    double? latitude,
+    double? longitude,
   }) async {
     _validatePhone(phoneLocal8Digits);
 
@@ -94,6 +100,8 @@ class AddressRepository {
           'district': district?.trim(),
           'street_details': streetDetails?.trim(),
           'landmark': landmark?.trim(),
+          'latitude': latitude,
+          'longitude': longitude,
         })
         .eq('id', id)
         .select()

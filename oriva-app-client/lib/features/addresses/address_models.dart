@@ -11,6 +11,8 @@ class Address {
   final String? district;
   final String? streetDetails;
   final String? landmark;
+  final double? latitude;
+  final double? longitude;
   final bool isDefault;
   final DateTime createdAt;
 
@@ -24,6 +26,8 @@ class Address {
     this.district,
     this.streetDetails,
     this.landmark,
+    this.latitude,
+    this.longitude,
     required this.isDefault,
     required this.createdAt,
   });
@@ -39,6 +43,8 @@ class Address {
       district: j['district']?.toString(),
       streetDetails: j['street_details']?.toString(),
       landmark: j['landmark']?.toString(),
+      latitude: (j['latitude'] as num?)?.toDouble(),
+      longitude: (j['longitude'] as num?)?.toDouble(),
       isDefault: j['is_default'] == true,
       createdAt: DateTime.tryParse(j['created_at']?.toString() ?? '') ??
           DateTime.now(),
