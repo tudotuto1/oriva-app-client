@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 class MapPickerPage extends StatefulWidget {
@@ -17,6 +18,7 @@ class _MapPickerPageState extends State<MapPickerPage> {
 
   final MapController _mapController = MapController();
   late LatLng _center;
+  bool _locating = false;
 
   @override
   void initState() {
@@ -34,6 +36,42 @@ class _MapPickerPageState extends State<MapPickerPage> {
 
   void _confirm() {
     Navigator.of(context).pop(_center);
+  }
+
+  Future<void> _useMyLocation() async {
+    setState(() => _locating = true);
+    try {
+      final serviceOn = await Geolocator.isLocationServiceEnabled();
+      if (!serviceOn) {
+        _showMsg('Activez la localisation de votre téléphone.');
+        return;
+      }
+      LocationPermission perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
+        _showMsg('Permission de localisation refusée.');
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition();
+      if (!mounted) return;
+      final here = LatLng(pos.latitude, pos.longitude);
+      setState(() => _center = here);
+      _mapController.move(here, 16);
+    } catch (_) {
+      _showMsg('Impossible d\'obtenir la position.');
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
+
+  void _showMsg(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(text)),
+    );
   }
 
   @override
@@ -88,6 +126,25 @@ class _MapPickerPageState extends State<MapPickerPage> {
                 style: TextStyle(color: Color(0xFFF5F0E8), fontSize: 13),
                 textAlign: TextAlign.center,
               ),
+            ),
+          ),
+          Positioned(
+            right: 16,
+            top: 70,
+            child: FloatingActionButton.small(
+              backgroundColor: const Color(0xFFC9A96E),
+              foregroundColor: const Color(0xFF080808),
+              onPressed: _locating ? null : _useMyLocation,
+              child: _locating
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFF080808),
+                      ),
+                    )
+                  : const Icon(Icons.my_location),
             ),
           ),
           Positioned(
