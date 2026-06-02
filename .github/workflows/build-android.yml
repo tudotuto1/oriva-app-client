@@ -93,6 +93,16 @@ jobs:
           echo "=== AndroidManifest.xml ==="
           cat "$MANIFEST"
 
+      - name: Ensure location permissions in AndroidManifest
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          if ! grep -q "android.permission.ACCESS_FINE_LOCATION" "$MANIFEST"; then
+            sed -i 's|\(<manifest[^>]*>\)|\1\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>|' "$MANIFEST"
+            echo "Location permissions added."
+          else
+            echo "Location permissions already present."
+          fi
+
       - name: Generate launcher icons (Oriva shopping bag)
         run: dart run flutter_launcher_icons
 
