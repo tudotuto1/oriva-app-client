@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import 'address_models.dart';
 import 'address_providers.dart';
+import 'map_picker_page.dart';
 
 class AddressFormPage extends ConsumerStatefulWidget {
   const AddressFormPage({super.key, this.addressId});
@@ -25,6 +27,8 @@ class _AddressFormPageState extends ConsumerState<AddressFormPage> {
   bool _saving = false;
   bool _loading = true;
   String? _error;
+  double? _latitude;
+  double? _longitude;
 
   bool get _isEdit => widget.addressId != null;
 
@@ -58,6 +62,8 @@ class _AddressFormPageState extends ConsumerState<AddressFormPage> {
       _street.text = addr.streetDetails ?? '';
       _landmark.text = addr.landmark ?? '';
       _isDefault = addr.isDefault;
+      _latitude = addr.latitude;
+      _longitude = addr.longitude;
       setState(() => _loading = false);
     } on AddressException catch (e) {
       if (mounted) setState(() {
@@ -68,6 +74,23 @@ class _AddressFormPageState extends ConsumerState<AddressFormPage> {
       if (mounted) setState(() {
         _error = 'Erreur chargement.';
         _loading = false;
+      });
+    }
+  }
+
+  Future<void> _pickOnMap() async {
+    final result = await Navigator.of(context).push<LatLng>(
+      MaterialPageRoute(
+        builder: (_) => MapPickerPage(
+          initialLat: _latitude,
+          initialLng: _longitude,
+        ),
+      ),
+    );
+    if (result != null && mounted) {
+      setState(() {
+        _latitude = result.latitude;
+        _longitude = result.longitude;
       });
     }
   }
@@ -90,6 +113,8 @@ class _AddressFormPageState extends ConsumerState<AddressFormPage> {
           district: _district.text,
           streetDetails: _street.text,
           landmark: _landmark.text,
+          latitude: _latitude,
+          longitude: _longitude,
         );
         if (_isDefault) await repo.setDefault(widget.addressId!);
       } else {
@@ -102,6 +127,8 @@ class _AddressFormPageState extends ConsumerState<AddressFormPage> {
           streetDetails: _street.text,
           landmark: _landmark.text,
           isDefault: _isDefault,
+          latitude: _latitude,
+          longitude: _longitude,
         );
       }
       ref.invalidate(myAddressesProvider);
@@ -158,6 +185,23 @@ class _AddressFormPageState extends ConsumerState<AddressFormPage> {
                       hint: 'Rue 123, secteur 15'),
                   _field('Repère', _landmark,
                       hint: 'À côté de la pharmacie...'),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: _pickOnMap,
+                    icon: const Icon(Icons.map_outlined,
+                        color: Color(0xFFC9A96E)),
+                    label: Text(
+                      (_latitude != null && _longitude != null)
+                          ? 'Position enregistrée ✓ (modifier)'
+                          : 'Choisir la position sur la carte',
+                      style: const TextStyle(color: Color(0xFFF5F0E8)),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFC9A96E)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      minimumSize: const Size.fromWidth(double.infinity),
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
