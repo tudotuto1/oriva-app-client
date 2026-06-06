@@ -21,7 +21,7 @@ class ShareProductButton extends StatelessWidget {
 
   // Page produit publique (aperçu riche WhatsApp + image).
   static const String _shareBaseUrl =
-      'https://oclpkzmpaaurqkefbbij.supabase.co/functions/v1/p';
+      'https://project-mt6rv.vercel.app/p';
 
   String _formatPrice(num price) {
     final formatter = NumberFormat('#,###', 'fr_FR');
@@ -58,7 +58,7 @@ class ShareProductButton extends StatelessWidget {
     if (id != null && id.isNotEmpty) {
       lines.add('');
       lines.add('👉 Voir le produit :');
-      lines.add('$_shareBaseUrl?id=$id');
+      lines.add('$_shareBaseUrl/$id');
     }
     lines.add('');
     lines.add('— Oriva, marketplace premium Burkina Faso 🇧🇫');
