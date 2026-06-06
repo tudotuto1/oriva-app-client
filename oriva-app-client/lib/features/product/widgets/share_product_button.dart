@@ -19,6 +19,10 @@ class ShareProductButton extends StatelessWidget {
     this.size = 22,
   });
 
+  // Page produit publique (aperçu riche WhatsApp + image).
+  static const String _shareBaseUrl =
+      'https://oclpkzmpaaurqkefbbij.supabase.co/functions/v1/p';
+
   String _formatPrice(num price) {
     final formatter = NumberFormat('#,###', 'fr_FR');
     return '${formatter.format(price).replaceAll(',', ' ')} F CFA';
@@ -29,6 +33,7 @@ class ShareProductButton extends StatelessWidget {
     final displayPrice = product['display_price'];
     final shippingFee = product['shipping_fee_estimate'];
     final description = product['description']?.toString();
+    final id = product['id']?.toString();
 
     final lines = <String>[
       '✨ Découvrez « $title » sur Oriva',
@@ -49,6 +54,11 @@ class ShareProductButton extends StatelessWidget {
           : description.trim();
       lines.add('');
       lines.add(shortDesc);
+    }
+    if (id != null && id.isNotEmpty) {
+      lines.add('');
+      lines.add('👉 Voir le produit :');
+      lines.add('$_shareBaseUrl?id=$id');
     }
     lines.add('');
     lines.add('— Oriva, marketplace premium Burkina Faso 🇧🇫');
