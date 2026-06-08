@@ -97,6 +97,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               () => context.push('/order-history')),
           _buildMenuItem(LucideIcons.heart, 'Mes favoris',
               () => context.push('/wishlist')),
+          _buildMenuItem(LucideIcons.store, 'Boutiques suivies',
+              () => context.push('/followed-vendors')),
           _buildMenuItem(LucideIcons.userPen, 'Modifier le profil',
               () => context.push('/edit-profile')),
           _buildMenuItem(LucideIcons.mapPin, 'Adresses de livraison',

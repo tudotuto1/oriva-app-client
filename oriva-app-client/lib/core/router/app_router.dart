@@ -16,6 +16,8 @@ import '../../features/addresses/address_form_page.dart';
 import '../../features/wishlist/wishlist_page.dart';
 import '../../features/notifications/notifications_page.dart';
 import '../../features/splash/splash_screen.dart';
+import '../../features/vendors/vendor_page.dart';
+import '../../features/vendors/followed_vendors_page.dart';
 import '../supabase/supabase_service.dart';
 import 'page_transitions.dart';
 
@@ -128,6 +130,15 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/notifications',
       builder: (context, state) => const NotificationsPage(),
+    ),
+    GoRoute(
+      path: '/vendor/:id',
+      builder: (context, state) =>
+          VendorPage(vendorId: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: '/followed-vendors',
+      builder: (context, state) => const FollowedVendorsPage(),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(
