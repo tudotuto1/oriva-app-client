@@ -24,6 +24,13 @@ class SupabaseService {
       url: url,
       anonKey: anonKey,
     );
+
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final token = data.session?.accessToken;
+      if (token != null) {
+        Supabase.instance.client.realtime.setAuth(token);
+      }
+    });
   }
 
   static SupabaseClient get client => Supabase.instance.client;

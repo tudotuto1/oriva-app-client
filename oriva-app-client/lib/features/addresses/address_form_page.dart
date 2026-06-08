@@ -175,6 +175,21 @@ class _AddressFormPageState extends ConsumerState<AddressFormPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFC9A96E).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFC9A96E)),
+                    ),
+                    child: const Text(
+                      '📍 Carte activée — bouton « Ajouter » tout en bas',
+                      style: TextStyle(color: Color(0xFFC9A96E), fontSize: 13),
+                    ),
+                  ),
                   _field('Type d\'adresse *', _label, hint: 'Ex : Maison, Bureau, Boutique...'),
                   _field('Nom du destinataire *', _recipient,
                       hint: 'Bachir Bondo'),

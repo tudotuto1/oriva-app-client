@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/supabase/supabase_service.dart';
 import 'notification_models.dart';
 import 'notification_providers.dart';
 
@@ -118,8 +119,36 @@ class NotificationsPage extends ConsumerWidget {
         error: (e, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Text('Erreur : $e',
-                style: OrivaTypography.body(color: OrivaColors.danger)),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(LucideIcons.bellOff,
+                    size: 48,
+                    color: OrivaColors.muted.withValues(alpha: 0.5)),
+                const SizedBox(height: 16),
+                Text('Aucune notification',
+                    style: OrivaTypography.body(
+                        size: 16, color: OrivaColors.muted)),
+                const SizedBox(height: 8),
+                Text('Vos notifications apparaîtront ici.',
+                    textAlign: TextAlign.center,
+                    style: OrivaTypography.body(
+                        size: 13,
+                        color: OrivaColors.muted.withValues(alpha: 0.7))),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () async {
+                    try {
+                      await SupabaseService.client.auth.refreshSession();
+                    } catch (_) {}
+                    ref.invalidate(myNotificationsStreamProvider);
+                  },
+                  child: Text('Réessayer',
+                      style: OrivaTypography.body(
+                          size: 14, color: OrivaColors.gold)),
+                ),
+              ],
+            ),
           ),
         ),
         data: (list) {
