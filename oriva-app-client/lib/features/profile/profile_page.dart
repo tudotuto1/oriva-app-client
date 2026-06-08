@@ -62,10 +62,20 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               CircleAvatar(
                 radius: 32,
                 backgroundColor: OrivaColors.surface,
-                child: Text(
-                  name.isNotEmpty ? name[0].toUpperCase() : '?',
-                  style: OrivaTypography.display(size: 28, weight: FontWeight.w500, color: OrivaColors.gold),
-                ),
+                backgroundImage: (_profile?['avatar_url'] != null &&
+                        (_profile!['avatar_url'] as String).isNotEmpty)
+                    ? NetworkImage(_profile!['avatar_url'] as String)
+                    : null,
+                child: (_profile?['avatar_url'] == null ||
+                        (_profile!['avatar_url'] as String).isEmpty)
+                    ? Text(
+                        name.isNotEmpty ? name[0].toUpperCase() : '?',
+                        style: OrivaTypography.display(
+                            size: 28,
+                            weight: FontWeight.w500,
+                            color: OrivaColors.gold),
+                      )
+                    : null,
               ),
               const SizedBox(width: 16),
               Expanded(
