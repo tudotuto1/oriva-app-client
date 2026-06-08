@@ -14,6 +14,7 @@ import '../home/home_shell.dart';
 import '../recently_viewed/recently_viewed_provider.dart';
 import '../wishlist/widgets/wishlist_heart_button.dart';
 import '../reviews/widgets/product_rating_summary.dart';
+import '../vendors/follow_button.dart';
 import 'widgets/share_product_button.dart';
 import 'widgets/image_zoom_page.dart';
 
@@ -258,11 +259,16 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                               : null,
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          _vendor!['display_name'] ?? 'Vendeur',
-                          style: OrivaTypography.body(
-                              size: 13, color: OrivaColors.muted),
+                        Expanded(
+                          child: Text(
+                            _vendor!['display_name'] ?? 'Vendeur',
+                            style: OrivaTypography.body(
+                                size: 13, color: OrivaColors.muted),
+                          ),
                         ),
+                        if (_product!['vendor_id'] != null)
+                          FollowVendorButton(
+                              vendorId: _product!['vendor_id'].toString()),
                       ],
                     ),
                     const SizedBox(height: 16),
