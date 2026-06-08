@@ -201,20 +201,22 @@ class _AddressFormPageState extends ConsumerState<AddressFormPage> {
                   _field('Repère', _landmark,
                       hint: 'À côté de la pharmacie...'),
                   const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: _pickOnMap,
-                    icon: const Icon(Icons.map_outlined,
-                        color: Color(0xFFC9A96E)),
-                    label: Text(
-                      (_latitude != null && _longitude != null)
-                          ? 'Position enregistrée ✓ (modifier)'
-                          : 'Choisir la position sur la carte',
-                      style: const TextStyle(color: Color(0xFFF5F0E8)),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFC9A96E)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      minimumSize: const Size.fromWidth(double.infinity),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _pickOnMap,
+                      icon: const Icon(Icons.map_outlined,
+                          color: Color(0xFFC9A96E)),
+                      label: Text(
+                        (_latitude != null && _longitude != null)
+                            ? 'Position enregistrée ✓ (modifier)'
+                            : 'Choisir la position sur la carte',
+                        style: const TextStyle(color: Color(0xFFF5F0E8)),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFFC9A96E)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -241,39 +243,46 @@ class _AddressFormPageState extends ConsumerState<AddressFormPage> {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: _saving ? null : _save,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFC9A96E),
-                        disabledBackgroundColor: const Color(0xFF555555),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: _saving
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Color(0xFF080808),
-                              ),
-                            )
-                          : Text(
-                              _isEdit ? 'Enregistrer' : 'Ajouter',
-                              style: const TextStyle(
-                                color: Color(0xFF080808),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                    ),
-                  ),
+                  const SizedBox(height: 16),
                 ],
+              ),
+            ),
+      bottomNavigationBar: _loading
+          ? null
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: _saving ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFC9A96E),
+                      disabledBackgroundColor: const Color(0xFF555555),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: _saving
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFF080808),
+                            ),
+                          )
+                        : Text(
+                            _isEdit ? 'Enregistrer' : 'Ajouter',
+                            style: const TextStyle(
+                              color: Color(0xFF080808),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                  ),
+                ),
               ),
             ),
     );
