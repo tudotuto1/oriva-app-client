@@ -40,7 +40,11 @@ class OrderRepository {
     }
 
     final payload = items
-        .map((e) => {'product_id': e.id, 'quantity': e.quantity})
+        .map((e) => {
+              'product_id': e.id,
+              'quantity': e.quantity,
+              if (e.size != null) 'size': e.size,
+            })
         .toList();
 
     try {

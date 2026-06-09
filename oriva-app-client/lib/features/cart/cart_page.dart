@@ -174,6 +174,22 @@ class _CartItemTile extends StatelessWidget {
                       color: OrivaColors.gold,
                       weight: FontWeight.w600),
                 ),
+                if (item.size != null) ...[
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: OrivaColors.border),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      item.size!,
+                      style: OrivaTypography.body(
+                          size: 11, color: OrivaColors.muted),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -189,7 +205,7 @@ class _CartItemTile extends StatelessWidget {
               children: [
                 _QtyButton(
                   icon: LucideIcons.minus,
-                  onTap: () => cart.decrement(item.id),
+                  onTap: () => cart.decrement(item.cartKey),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -202,7 +218,7 @@ class _CartItemTile extends StatelessWidget {
                 _QtyButton(
                   icon: LucideIcons.plus,
                   onTap: item.quantity < item.stock
-                      ? () => cart.increment(item.id)
+                      ? () => cart.increment(item.cartKey)
                       : null,
                 ),
               ],

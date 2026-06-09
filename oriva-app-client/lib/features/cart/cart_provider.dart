@@ -11,6 +11,9 @@ class CartItem {
   final int weightGrams;      // NOUVEAU — pour calcul livraison panier
   final String? imageUrl;
   final int stock;
+  final String? size;
+  /// Clé unique panier : même produit + tailles différentes = lignes distinctes.
+  String get cartKey => '${id}_${size ?? ''}';
   int quantity;
 
   CartItem({
@@ -20,16 +23,18 @@ class CartItem {
     required this.weightGrams,
     this.imageUrl,
     required this.stock,
+    this.size,
     this.quantity = 1,
   });
 
-  CartItem copyWith({int? quantity}) => CartItem(
+  CartItem copyWith({int? quantity, String? size}) => CartItem(
         id: id,
         title: title,
         price: price,
         weightGrams: weightGrams,
         imageUrl: imageUrl,
         stock: stock,
+        size: size ?? this.size,
         quantity: quantity ?? this.quantity,
       );
 
@@ -40,6 +45,7 @@ class CartItem {
         'weightGrams': weightGrams,
         'imageUrl': imageUrl,
         'stock': stock,
+        'size': size,
         'quantity': quantity,
       };
 
@@ -50,6 +56,7 @@ class CartItem {
         weightGrams: (j['weightGrams'] as num).toInt(),
         imageUrl: j['imageUrl'] as String?,
         stock: (j['stock'] as num).toInt(),
+        size: j['size'] as String?,
         quantity: (j['quantity'] as num).toInt(),
       );
 }
@@ -95,13 +102,13 @@ class CartNotifier extends Notifier<List<CartItem>> {
   }
 
   void addItem(CartItem newItem) {
-    final idx = state.indexWhere((e) => e.id == newItem.id);
+    final idx = state.indexWhere((e) => e.cartKey == newItem.cartKey);
     if (idx >= 0) {
       final existing = state[idx];
       if (existing.quantity < existing.stock) {
         state = [
           for (final e in state)
-            if (e.id == newItem.id)
+            if (e.cartKey == newItem.cartKey)
               e.copyWith(quantity: e.quantity + 1)
             else
               e,
@@ -113,10 +120,10 @@ class CartNotifier extends Notifier<List<CartItem>> {
     _save();
   }
 
-  void increment(String id) {
+  void increment(String cartKey) {
     state = [
       for (final e in state)
-        if (e.id == id && e.quantity < e.stock)
+        if (e.cartKey == cartKey && e.quantity < e.stock)
           e.copyWith(quantity: e.quantity + 1)
         else
           e,
@@ -124,22 +131,24 @@ class CartNotifier extends Notifier<List<CartItem>> {
     _save();
   }
 
-  void decrement(String id) {
-    final item =
-        state.firstWhere((e) => e.id == id, orElse: () => throw Exception());
+  void decrement(String cartKey) {
+    final item = state.firstWhere(
+      (e) => e.cartKey == cartKey,
+      orElse: () => throw Exception(),
+    );
     if (item.quantity <= 1) {
-      remove(id);
+      remove(cartKey);
     } else {
       state = [
         for (final e in state)
-          if (e.id == id) e.copyWith(quantity: e.quantity - 1) else e,
+          if (e.cartKey == cartKey) e.copyWith(quantity: e.quantity - 1) else e,
       ];
     }
     _save();
   }
 
-  void remove(String id) {
-    state = state.where((e) => e.id != id).toList();
+  void remove(String cartKey) {
+    state = state.where((e) => e.cartKey != cartKey).toList();
     _save();
   }
 

@@ -38,6 +38,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   bool _loading = true;
   final ValueNotifier<int> _currentImageIndex = ValueNotifier<int>(0);
   final _pageController = PageController();
+  String? _selectedSize;
 
   @override
   void initState() {
@@ -121,6 +122,10 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
     final images = List<String>.from(_product!['images'] ?? []);
     final stock = _product!['stock'] ?? 0;
     final outOfStock = stock == 0;
+    final availableSizes = List<String>.from(
+        _product!['available_sizes'] ?? []);
+    final needsSize = availableSizes.isNotEmpty;
+    final sizeSelected = _selectedSize != null;
 
     return Scaffold(
       body: CustomScrollView(
@@ -336,6 +341,60 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                   ),
                   const SizedBox(height: 32),
 
+                  // ── Tailles disponibles ──────────────────────────
+                  Builder(builder: (context) {
+                    final sizes = List<String>.from(
+                        _product!['available_sizes'] ?? []);
+                    if (sizes.isEmpty) return const SizedBox.shrink();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('TAILLE', style: OrivaTypography.label()),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: sizes.map((s) {
+                            final active = _selectedSize == s;
+                            return GestureDetector(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setState(() => _selectedSize = s);
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 18, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: active
+                                      ? OrivaColors.gold
+                                      : Colors.transparent,
+                                  border: Border.all(
+                                    color: active
+                                        ? OrivaColors.gold
+                                        : OrivaColors.border,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  s,
+                                  style: OrivaTypography.body(
+                                    size: 14,
+                                    weight: FontWeight.w600,
+                                    color: active
+                                        ? OrivaColors.black
+                                        : OrivaColors.cream,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 32),
+                      ],
+                    );
+                  }),
+
                   Text('DESCRIPTION', style: OrivaTypography.label()),
                   const SizedBox(height: 12),
                   Text(
@@ -360,7 +419,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: outOfStock
+            onPressed: outOfStock || (needsSize && !sizeSelected)
                 ? null
                 : () {
                     HapticFeedback.lightImpact();
@@ -375,6 +434,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                             imageUrl:
                                 images.isNotEmpty ? images[0] : null,
                             stock: _product!['stock'] ?? 0,
+                            size: _selectedSize,
                           ),
                         );
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -407,7 +467,12 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                 outOfStock ? LucideIcons.x : LucideIcons.shoppingBag,
                 size: 18),
             label: Text(
-                outOfStock ? 'Rupture de stock' : 'Ajouter au panier'),
+              outOfStock
+                  ? 'Rupture de stock'
+                  : (needsSize && !sizeSelected)
+                      ? 'Choisir une taille'
+                      : 'Ajouter au panier',
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor:
                   outOfStock ? OrivaColors.surface : OrivaColors.gold,
