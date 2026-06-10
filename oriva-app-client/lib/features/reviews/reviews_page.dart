@@ -1,13 +1,17 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/oriva_error_state.dart';
+import '../product/widgets/image_zoom_page.dart';
 import 'review_models.dart';
 import 'review_providers.dart';
 import 'review_repository.dart';
@@ -331,6 +335,52 @@ class _ReviewCard extends StatelessWidget {
               style: OrivaTypography.body(size: 14),
             ),
           ],
+          if (review.imageUrls.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 76,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: review.imageUrls.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, i) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          fullscreenDialog: true,
+                          builder: (_) => ImageZoomPage(
+                            imageUrls: review.imageUrls,
+                            initialIndex: i,
+                          ),
+                        ),
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: CachedNetworkImage(
+                        imageUrl: review.imageUrls[i],
+                        width: 76,
+                        height: 76,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => Container(
+                            width: 76,
+                            height: 76,
+                            color: OrivaColors.black),
+                        errorWidget: (_, __, ___) => Container(
+                          width: 76,
+                          height: 76,
+                          color: OrivaColors.black,
+                          child: const Icon(LucideIcons.imageOff,
+                              size: 18, color: OrivaColors.muted),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -403,6 +453,21 @@ class _CreateReviewSheetState extends ConsumerState<_CreateReviewSheet> {
   final _commentCtrl = TextEditingController();
   bool _submitting = false;
   String? _error;
+  final List<Uint8List> _images = [];
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickImages() async {
+    if (_images.length >= 3) return;
+    try {
+      final picked = await _picker.pickMultiImage(
+          imageQuality: 70, maxWidth: 1400);
+      for (final x in picked) {
+        if (_images.length >= 3) break;
+        _images.add(await x.readAsBytes());
+      }
+      if (mounted) setState(() {});
+    } catch (_) {}
+  }
 
   @override
   void dispose() {
@@ -420,12 +485,19 @@ class _CreateReviewSheetState extends ConsumerState<_CreateReviewSheet> {
       _error = null;
     });
     try {
+      List<String>? urls;
+      if (_images.isNotEmpty) {
+        urls = await ref
+            .read(reviewRepositoryProvider)
+            .uploadReviewImages(_images);
+      }
       await ref.read(reviewRepositoryProvider).createReview(
             productId: widget.productId,
             rating: _rating,
             comment: _commentCtrl.text.trim().isEmpty
                 ? null
                 : _commentCtrl.text.trim(),
+            imageUrls: urls,
           );
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
@@ -502,6 +574,62 @@ class _CreateReviewSheetState extends ConsumerState<_CreateReviewSheet> {
               counterStyle: OrivaTypography.body(
                   size: 11, color: OrivaColors.muted),
             ),
+          ),
+          const SizedBox(height: 16),
+          Text('PHOTOS (FACULTATIF)', style: OrivaTypography.label()),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ..._images.asMap().entries.map((e) {
+                return Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.memory(
+                        e.value,
+                        width: 72,
+                        height: 72,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      top: 2,
+                      right: 2,
+                      child: GestureDetector(
+                        onTap: () =>
+                            setState(() => _images.removeAt(e.key)),
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: OrivaColors.black.withValues(alpha: 0.7),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(LucideIcons.x,
+                              size: 14, color: OrivaColors.cream),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }),
+              if (_images.length < 3)
+                GestureDetector(
+                  onTap: _submitting ? null : _pickImages,
+                  child: Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: OrivaColors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: OrivaColors.border),
+                    ),
+                    child: const Icon(LucideIcons.camera,
+                        color: OrivaColors.muted),
+                  ),
+                ),
+            ],
           ),
           if (_error != null) ...[
             const SizedBox(height: 8),

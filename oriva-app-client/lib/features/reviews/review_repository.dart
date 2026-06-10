@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../core/supabase/supabase_service.dart';
 import 'review_models.dart';
 
@@ -58,16 +62,41 @@ class ReviewRepository {
     }
   }
 
+  /// Upload les photos d'avis dans le bucket review-images.
+  /// Retourne la liste des URLs publiques.
+  Future<List<String>> uploadReviewImages(List<Uint8List> images) async {
+    final uid = SupabaseService.currentUser?.id;
+    if (uid == null) {
+      throw Exception('NOT_AUTHENTICATED');
+    }
+    final storage = _client.storage.from('review-images');
+    final urls = <String>[];
+    for (var i = 0; i < images.length; i++) {
+      final path =
+          '$uid/${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
+      await storage.uploadBinary(
+        path,
+        images[i],
+        fileOptions: const FileOptions(
+            contentType: 'image/jpeg', upsert: true),
+      );
+      urls.add(storage.getPublicUrl(path));
+    }
+    return urls;
+  }
+
   /// Lance une exception avec le code d'erreur en cas d'échec
   Future<String> createReview({
     required String productId,
     required int rating,
     String? comment,
+    List<String>? imageUrls,
   }) async {
     final res = await _client.rpc('create_review', params: {
       'p_product_id': productId,
       'p_rating': rating,
       'p_comment': comment,
+      'p_image_urls': imageUrls,
     });
     final map = Map<String, dynamic>.from(res as Map);
     return map['review_id'].toString();

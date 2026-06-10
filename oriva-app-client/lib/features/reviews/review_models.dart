@@ -7,6 +7,7 @@ class Review {
   final DateTime createdAt;
   final String? buyerDisplayName;
   final String? buyerAvatarUrl;
+  final List<String> imageUrls;
 
   const Review({
     required this.id,
@@ -17,6 +18,7 @@ class Review {
     this.comment,
     this.buyerDisplayName,
     this.buyerAvatarUrl,
+    this.imageUrls = const [],
   });
 
   factory Review.fromMap(Map<String, dynamic> m, {Map<String, dynamic>? buyer}) {
@@ -26,6 +28,10 @@ class Review {
       buyerId: m['buyer_id'].toString(),
       rating: (m['rating'] as num).toInt(),
       comment: m['comment'] as String?,
+      imageUrls: (m['image_urls'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
       createdAt: DateTime.parse(m['created_at'].toString()),
       buyerDisplayName: buyer?['display_name'] as String?,
       buyerAvatarUrl: buyer?['avatar_url'] as String?,
