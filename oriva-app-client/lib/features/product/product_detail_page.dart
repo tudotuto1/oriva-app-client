@@ -15,6 +15,7 @@ import '../recently_viewed/recently_viewed_provider.dart';
 import '../wishlist/widgets/wishlist_heart_button.dart';
 import '../reviews/widgets/product_rating_summary.dart';
 import '../vendors/follow_button.dart';
+import '../../core/widgets/verified_badge.dart';
 import 'widgets/share_product_button.dart';
 import 'widgets/image_zoom_page.dart';
 
@@ -69,7 +70,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
         try {
           vendor = await SupabaseService.client
               .from('profiles')
-              .select('display_name, avatar_url')
+              .select('display_name, avatar_url, is_verified')
               .eq('id', product['vendor_id'])
               .single();
         } catch (_) {}
@@ -265,10 +266,21 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
-                            _vendor!['display_name'] ?? 'Vendeur',
-                            style: OrivaTypography.body(
-                                size: 13, color: OrivaColors.muted),
+                          child: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  _vendor!['display_name'] ?? 'Vendeur',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: OrivaTypography.body(
+                                      size: 13, color: OrivaColors.muted),
+                                ),
+                              ),
+                              if (_vendor!['is_verified'] == true) ...[
+                                const SizedBox(width: 4),
+                                const VerifiedBadge(size: 15),
+                              ],
+                            ],
                           ),
                         ),
                         if (_product!['vendor_id'] != null)

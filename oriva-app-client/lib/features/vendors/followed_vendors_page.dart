@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/supabase/supabase_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/verified_badge.dart';
 
 class FollowedVendorsPage extends StatefulWidget {
   const FollowedVendorsPage({super.key});
@@ -46,7 +47,7 @@ class _FollowedVendorsPageState extends State<FollowedVendorsPage> {
       }
       final profiles = await SupabaseService.client
           .from('profiles')
-          .select('id, display_name, avatar_url')
+          .select('id, display_name, avatar_url, is_verified')
           .inFilter('id', ids);
       if (mounted) {
         setState(() {
@@ -120,9 +121,21 @@ class _FollowedVendorsPageState extends State<FollowedVendorsPage> {
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: Text(name,
-                                  style: OrivaTypography.body(
-                                      size: 15, weight: FontWeight.w600)),
+                              child: Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(name,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: OrivaTypography.body(
+                                            size: 15,
+                                            weight: FontWeight.w600)),
+                                  ),
+                                  if (v['is_verified'] == true) ...[
+                                    const SizedBox(width: 4),
+                                    const VerifiedBadge(size: 15),
+                                  ],
+                                ],
+                              ),
                             ),
                             const Icon(LucideIcons.chevronRight,
                                 size: 18, color: OrivaColors.muted),

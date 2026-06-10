@@ -8,6 +8,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/supabase/supabase_service.dart';
 import '../../core/theme/app_theme.dart';
 import 'follow_button.dart';
+import '../../core/widgets/verified_badge.dart';
 
 class VendorPage extends StatefulWidget {
   final String vendorId;
@@ -32,7 +33,7 @@ class _VendorPageState extends State<VendorPage> {
     try {
       final vendor = await SupabaseService.client
           .from('profiles')
-          .select('display_name, avatar_url')
+          .select('display_name, avatar_url, is_verified')
           .eq('id', widget.vendorId)
           .maybeSingle();
       final products = await SupabaseService.client
@@ -99,6 +100,10 @@ class _VendorPageState extends State<VendorPage> {
                                   '${_products.length} produit${_products.length > 1 ? 's' : ''}',
                                   style: OrivaTypography.body(
                                       size: 13, color: OrivaColors.muted)),
+                              if (_vendor?['is_verified'] == true) ...[
+                                const SizedBox(height: 6),
+                                const VerifiedBadge(showLabel: true),
+                              ],
                             ],
                           ),
                         ),
