@@ -16,6 +16,7 @@ import '../wishlist/widgets/wishlist_heart_button.dart';
 import '../reviews/widgets/product_rating_summary.dart';
 import '../vendors/follow_button.dart';
 import '../../core/widgets/verified_badge.dart';
+import '../../core/widgets/color_swatches.dart';
 import 'widgets/share_product_button.dart';
 import 'widgets/image_zoom_page.dart';
 
@@ -40,6 +41,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   final ValueNotifier<int> _currentImageIndex = ValueNotifier<int>(0);
   final _pageController = PageController();
   String? _selectedSize;
+  String? _selectedColor;
 
   @override
   void initState() {
@@ -127,6 +129,10 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
         _product!['available_sizes'] ?? []);
     final needsSize = availableSizes.isNotEmpty;
     final sizeSelected = _selectedSize != null;
+    final availableColors = List<String>.from(
+        _product!['available_colors'] ?? []);
+    final needsColor = availableColors.isNotEmpty;
+    final colorSelected = _selectedColor != null;
 
     return Scaffold(
       body: CustomScrollView(
@@ -407,6 +413,76 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                     );
                   }),
 
+                  // ── Couleurs disponibles ─────────────────────────
+                  Builder(builder: (context) {
+                    final colors = List<String>.from(
+                        _product!['available_colors'] ?? []);
+                    if (colors.isEmpty) return const SizedBox.shrink();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('COULEUR', style: OrivaTypography.label()),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: colors.map((c) {
+                            final active = _selectedColor == c;
+                            return GestureDetector(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setState(() => _selectedColor = c);
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 9),
+                                decoration: BoxDecoration(
+                                  color: active
+                                      ? OrivaColors.gold.withValues(alpha: 0.12)
+                                      : Colors.transparent,
+                                  border: Border.all(
+                                    color: active
+                                        ? OrivaColors.gold
+                                        : OrivaColors.border,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 16,
+                                      height: 16,
+                                      decoration: BoxDecoration(
+                                        color: orivaSwatch(c),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: OrivaColors.border),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      c,
+                                      style: OrivaTypography.body(
+                                        size: 14,
+                                        weight: FontWeight.w600,
+                                        color: active
+                                            ? OrivaColors.gold
+                                            : OrivaColors.cream,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 32),
+                      ],
+                    );
+                  }),
+
                   Text('DESCRIPTION', style: OrivaTypography.label()),
                   const SizedBox(height: 12),
                   Text(
@@ -431,7 +507,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: outOfStock || (needsSize && !sizeSelected)
+            onPressed: outOfStock || (needsSize && !sizeSelected) || (needsColor && !colorSelected)
                 ? null
                 : () {
                     HapticFeedback.lightImpact();
@@ -447,6 +523,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                                 images.isNotEmpty ? images[0] : null,
                             stock: _product!['stock'] ?? 0,
                             size: _selectedSize,
+                            color: _selectedColor,
                           ),
                         );
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -483,7 +560,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
                   ? 'Rupture de stock'
                   : (needsSize && !sizeSelected)
                       ? 'Choisir une taille'
-                      : 'Ajouter au panier',
+                      : (needsColor && !colorSelected)
+                          ? 'Choisir une couleur'
+                          : 'Ajouter au panier',
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor:

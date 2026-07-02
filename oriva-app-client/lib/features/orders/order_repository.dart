@@ -44,6 +44,7 @@ class OrderRepository {
               'product_id': e.id,
               'quantity': e.quantity,
               if (e.size != null) 'size': e.size,
+              if (e.color != null) 'color': e.color,
             })
         .toList();
 

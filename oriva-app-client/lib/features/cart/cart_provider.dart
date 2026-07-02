@@ -12,8 +12,9 @@ class CartItem {
   final String? imageUrl;
   final int stock;
   final String? size;
+  final String? color;
   /// Clé unique panier : même produit + tailles différentes = lignes distinctes.
-  String get cartKey => '${id}_${size ?? ''}';
+  String get cartKey => '${id}_${size ?? ''}_${color ?? ''}';
   int quantity;
 
   CartItem({
@@ -24,10 +25,11 @@ class CartItem {
     this.imageUrl,
     required this.stock,
     this.size,
+    this.color,
     this.quantity = 1,
   });
 
-  CartItem copyWith({int? quantity, String? size}) => CartItem(
+  CartItem copyWith({int? quantity, String? size, String? color}) => CartItem(
         id: id,
         title: title,
         price: price,
@@ -35,6 +37,7 @@ class CartItem {
         imageUrl: imageUrl,
         stock: stock,
         size: size ?? this.size,
+        color: color ?? this.color,
         quantity: quantity ?? this.quantity,
       );
 
@@ -46,6 +49,7 @@ class CartItem {
         'imageUrl': imageUrl,
         'stock': stock,
         'size': size,
+        'color': color,
         'quantity': quantity,
       };
 
@@ -57,6 +61,7 @@ class CartItem {
         imageUrl: j['imageUrl'] as String?,
         stock: (j['stock'] as num).toInt(),
         size: j['size'] as String?,
+        color: j['color'] as String?,
         quantity: (j['quantity'] as num).toInt(),
       );
 }

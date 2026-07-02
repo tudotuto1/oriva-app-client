@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/pricing/pricing_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/color_swatches.dart';
 import '../orders/order_models.dart';
 import '../orders/order_providers.dart';
 import '../orders/order_repository.dart';
@@ -188,6 +189,29 @@ class _CartItemTile extends StatelessWidget {
                       style: OrivaTypography.body(
                           size: 11, color: OrivaColors.muted),
                     ),
+                  ),
+                ],
+                if (item.color != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: orivaSwatch(item.color!),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: OrivaColors.border),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        item.color!,
+                        style: OrivaTypography.body(
+                            size: 11, color: OrivaColors.muted),
+                      ),
+                    ],
                   ),
                 ],
               ],
