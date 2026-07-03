@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,6 +32,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   final _searchController = TextEditingController();
   Timer? _searchDebounce;
   List<Map<String, dynamic>> _allProducts = [];
+  List<Map<String, dynamic>> _shuffledProducts = [];
   bool _loading = true;
   bool _hasError = false;
   int _carouselIndex = 0;
@@ -71,8 +73,11 @@ class _HomePageState extends ConsumerState<HomePage> {
           .select()
           .order('created_at', ascending: false);
       final products = List<Map<String, dynamic>>.from(response);
+      final shuffled = List<Map<String, dynamic>>.from(products)
+        ..shuffle(Random());
       setState(() {
         _allProducts = products;
+        _shuffledProducts = shuffled;
         _loading = false;
       });
     } catch (e) {
@@ -111,7 +116,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     required String? categoryId,
   }) {
     final q = query.toLowerCase();
-    return _allProducts.where((p) {
+    return _shuffledProducts.where((p) {
       if (categoryId != null) {
         final pid = p['category_id']?.toString();
         if (pid != categoryId) return false;
