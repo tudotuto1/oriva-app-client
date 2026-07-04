@@ -54,7 +54,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         centerTitle: false,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(
+            24, 24, 24, 24 + MediaQuery.of(context).padding.bottom + 96),
         children: [
           // Avatar + nom
           Row(
